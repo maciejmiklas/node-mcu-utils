@@ -1,18 +1,10 @@
 -- This Lua file is based on: https://github.com/daurnimator/luatz - Thanks !
 
-local strftime = require "strftime".strftime
-local strformat = string.format
-local floor = math.floor
-local idiv do
-	-- Try and use actual integer division when available (Lua 5.3+)
-	local idiv_loader = (loadstring or load)([[return function(n,d) return n//d end]], "idiv") -- luacheck: ignore 113
-	if idiv_loader then
-		idiv = idiv_loader()
-	else
-		idiv = function(n, d)
-			return floor(n/d)
-		end
-	end
+-- 55886
+-- 50720
+
+local function idiv(n, d)
+	return math.floor(n/d)
 end
 
 
@@ -94,7 +86,7 @@ local function normalise ( year , month , day , hour , min , sec )
 	year  , month = borrow ( year  , month , 12 )
 	-- Carry from month to year first, so we get month length correct in next line around leap years
 	year  , month = carry ( year , month , 12 )
-	month , day   = borrow ( month , day   , month_length ( floor ( month + 1 ) , year ) )
+	month , day   = borrow ( month , day   , month_length ( math.floor ( month + 1 ) , year ) )
 	day   , hour  = borrow ( day   , hour  , 24 )
 	hour  , min   = borrow ( hour  , min   , 60 )
 	min   , sec   = borrow ( min   , sec   , 60 )
@@ -129,25 +121,8 @@ local function normalise ( year , month , day , hour , min , sec )
 	-- Now we can place `day` and `month` back in their normal ranges
 	-- e.g. month as 1-12 instead of 0-11
 	month , day = month + 1 , day + 1
-
 	return year , month , day , hour , min , sec
 end
-
-local leap_years_since_1970 = leap_years_since ( 1970 )
-local function timestamp ( year , month , day , hour , min , sec )
-	year , month , day , hour , min , sec = normalise ( year , month , day , hour , min , sec )
-
-	local days_since_epoch = day_of_year ( day , month , year )
-		+ 365 * ( year - 1970 )
-		-- Each leap year adds one day
-		+ ( leap_years_since ( year - 1 ) - leap_years_since_1970 ) - 1
-
-	return days_since_epoch * (60*60*24)
-		+ hour  * (60*60)
-		+ min   * 60
-		+ sec
-end
-
 
 local timetable_methods = { }
 
@@ -176,70 +151,38 @@ function timetable_methods:normalise ( )
 end
 timetable_methods.normalize = timetable_methods.normalise -- American English
 
-function timetable_methods:timestamp ( )
-	return timestamp ( self:unpack ( ) )
-end
-
 function timetable_methods:rfc_3339 ( )
 	local year, month, day, hour, min, fsec = self:unpack()
 	local sec, msec = borrow(fsec, 0, 1000)
 	msec = math.floor(msec)
-	return strformat ( "%04u-%02u-%02uT%02u:%02u:%02d.%03d" , year , month , day , hour , min , sec , msec )
-end
-
-function timetable_methods:strftime ( format_string )
-	return strftime ( format_string , self )
+	return string.format ("%04u-%02u-%02uT%02u:%02u:%02d.%03d" , year , month , day , hour , min , sec , msec )
 end
 
 local timetable_mt
 
-local function coerce_arg ( t )
-	if getmetatable ( t ) == timetable_mt then
-		return t:timestamp ( )
-	end
-	return t
-end
 
 timetable_mt = {
 	__index    = timetable_methods ;
 	__tostring = timetable_methods.rfc_3339 ;
-	__eq = function ( a , b )
-		return a:timestamp ( ) == b:timestamp ( )
-	end ;
-	__lt = function ( a , b )
-		return a:timestamp ( ) < b:timestamp ( )
-	end ;
-	__sub = function ( a , b )
-		return coerce_arg ( a ) - coerce_arg ( b )
-	end ;
 }
 
-local function cast_timetable ( tm )
-	return setmetatable ( tm , timetable_mt )
-end
-
-local function new_timetable ( year , month , day , hour , min , sec , yday , wday )
-	return cast_timetable {
-		year  = year ;
-		month = month ;
-		day   = day ;
-		hour  = hour ;
-		min   = min ;
-		sec   = sec ;
-		yday  = yday ;
-		wday  = wday ;
+local function new_timetable ( ts )
+	timetable = {
+		year  = 1970 ;
+		month = 1 ;
+		day   = 1 ;
+		hour  = 0 ;
+		min   = 0 ;
+		sec   = ts ;
+		yday  = 0 ;
+		wday  = 0 ;
 	}
+	setmetatable (timetable, timetable_mt)
+	return timetable
 end
 
-function timetable_methods:clone ( )
-	return new_timetable ( self:unpack ( ) )
-end
-
-function new_from_timestamp ( ts )
-	if type ( ts ) ~= "number" then
-		error ( "bad argument #1 to 'new_from_timestamp' (number expected, got " .. type ( ts ) .. ")" , 2 )
-	end
-	return new_timetable ( 1970 , 1 , 1 , 0 , 0 , ts ):normalise ( )
+function new_from_timestamp(ts)
+	return new_timetable(ts):normalise ( )
 end
 
 return {
@@ -247,7 +190,6 @@ return {
 	day_of_year = day_of_year ;
 	day_of_week = day_of_week ;
 	normalise = normalise ;
-	timestamp = timestamp ;
 
 	new = new_timetable ;
 	new_from_timestamp = new_from_timestamp ;
