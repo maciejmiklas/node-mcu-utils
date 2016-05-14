@@ -1,12 +1,10 @@
 -- This Lua file is based on: https://github.com/daurnimator/luatz - Thanks !
 
--- 55886
--- 50720
-
+-- 51048
+		
 local function idiv(n, d)
 	return math.floor(n/d)
 end
-
 
 local mon_lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 -- Number of days in year until start of month; not corrected for leap years
@@ -76,10 +74,23 @@ local function carry ( tens , units , base )
 	return tens , units
 end
 
+	--	year  = 1970 ;
+	--	month = 1 ;
+	--	day   = 1 ;
+	--	hour  = 0 ;
+	--	min   = 0 ;
+	--	sec   = ts ;
+	--	yday  = 0 ;
+	--	wday  = 0 ;
+
 -- Modify parameters so they all fit within the "normal" range
-local function normalise ( year , month , day , hour , min , sec )
-	-- `month` and `day` start from 1, need -1 and +1 so it works modulo
-	month , day = month - 1 , day - 1
+local function normalise (ts)
+	year = 1970
+	month = 0
+	day = 0
+	hour = 0 
+	min = 0
+	sec = ts
 
 	-- Convert everything (except seconds) to an integer
 	-- by propagating fractional components down.
@@ -137,9 +148,9 @@ function timetable_methods:unpack ( )
 		self.wday
 end
 
-function timetable_methods:normalise ( )
+function timetable_methods:normalise (ts)
 	local year , month , day
-	year , month , day , self.hour , self.min , self.sec = normalise ( self:unpack ( ) )
+	year , month , day , self.hour , self.min , self.sec = normalise (ts)
 
 	self.day   = day
 	self.month = month
@@ -158,41 +169,26 @@ function timetable_methods:rfc_3339 ( )
 	return string.format ("%04u-%02u-%02uT%02u:%02u:%02d.%03d" , year , month , day , hour , min , sec , msec )
 end
 
-local timetable_mt
-
-
-timetable_mt = {
+local mt = {
 	__index    = timetable_methods ;
 	__tostring = timetable_methods.rfc_3339 ;
 }
 
-local function new_timetable ( ts )
-	timetable = {
-		year  = 1970 ;
-		month = 1 ;
-		day   = 1 ;
-		hour  = 0 ;
-		min   = 0 ;
-		sec   = ts ;
-		yday  = 0 ;
-		wday  = 0 ;
+function new(ts)
+	date = {
+		year  = 1970,
+		month = 1,
+		day   = 1,
+		hour  = 0,
+		min   = 0,
+		sec   = ts,
+		yday  = 0,
+		wday  = 0,
 	}
-	setmetatable (timetable, timetable_mt)
-	return timetable
-end
-
-function new_from_timestamp(ts)
-	return new_timetable(ts):normalise ( )
+	setmetatable (date, mt)
+	return date:normalise (ts)
 end
 
 return {
-	is_leap = is_leap ;
-	day_of_year = day_of_year ;
-	day_of_week = day_of_week ;
-	normalise = normalise ;
-
-	new = new_timetable ;
-	new_from_timestamp = new_from_timestamp ;
-	cast = cast_timetable ;
-	timetable_mt = timetable_mt ;
+	new = new
 }
