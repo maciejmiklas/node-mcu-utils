@@ -1,6 +1,8 @@
--- This Lua file is based on: https://github.com/daurnimator/luatz - Thanks !
+-- This file is based on: https://github.com/daurnimator/luatz
 
 -- 51048
+
+local public = { }
 		
 local function idiv(n, d)
 	return math.floor(n/d)
@@ -74,17 +76,8 @@ local function carry ( tens , units , base )
 	return tens , units
 end
 
-	--	year  = 1970 ;
-	--	month = 1 ;
-	--	day   = 1 ;
-	--	hour  = 0 ;
-	--	min   = 0 ;
-	--	sec   = ts ;
-	--	yday  = 0 ;
-	--	wday  = 0 ;
-
--- Modify parameters so they all fit within the "normal" range
-local function normalise (ts)
+-- ts - seconds since 1.1.1970
+function public:setTime(ts)
 	year = 1970
 	month = 0
 	day = 0
@@ -131,47 +124,27 @@ local function normalise (ts)
 
 	-- Now we can place `day` and `month` back in their normal ranges
 	-- e.g. month as 1-12 instead of 0-11
-	month , day = month + 1 , day + 1
-	return year , month , day , hour , min , sec
-end
-
-local timetable_methods = { }
-
-function timetable_methods:unpack ( )
-	return assert ( self.year  , "year required" ) ,
-		assert ( self.month , "month required" ) ,
-		assert ( self.day   , "day required" ) ,
-		self.hour or 12 ,
-		self.min  or 0 ,
-		self.sec  or 0 ,
-		self.yday ,
-		self.wday
-end
-
-function timetable_methods:normalise (ts)
-	local year , month , day
-	year , month , day , self.hour , self.min , self.sec = normalise (ts)
-
-	self.day   = day
+	month = month + 1
+	day = day + 1
+	
+	self.year = year
 	self.month = month
-	self.year  = year
+	self.day = day
+	self.hour = hour 
+	self.min = min
+	self.sec = sec
 	self.yday  = day_of_year ( day , month , year )
 	self.wday  = day_of_week ( day , month , year )
-
-	return self
 end
-timetable_methods.normalize = timetable_methods.normalise -- American English
 
-function timetable_methods:rfc_3339 ( )
-	local year, month, day, hour, min, fsec = self:unpack()
-	local sec, msec = borrow(fsec, 0, 1000)
-	msec = math.floor(msec)
-	return string.format ("%04u-%02u-%02uT%02u:%02u:%02d.%03d" , year , month , day , hour , min , sec , msec )
+function public:tostring()
+	return string.format("%04u-%02u-%02u %02u:%02u:%02d", self.year, self.month, 
+		self.day, self.hour, self.min, self.sec)
 end
 
 local mt = {
-	__index    = timetable_methods ;
-	__tostring = timetable_methods.rfc_3339 ;
+	__index = public,
+	__tostring = public.tostring
 }
 
 function new(ts)
@@ -181,12 +154,13 @@ function new(ts)
 		day   = 1,
 		hour  = 0,
 		min   = 0,
-		sec   = ts,
+		sec   = 0,
 		yday  = 0,
 		wday  = 0,
 	}
-	setmetatable (date, mt)
-	return date:normalise (ts)
+	setmetatable(date, mt)
+	date:setTime(ts)
+	return date
 end
 
 return {

@@ -1,53 +1,32 @@
-function wifiConnect()
-    print("Connecting to Wi-Fi")
-    local status = wifi.sta.status()
-    for retry = 1, 20 do
-        status = wifi.sta.status()
-        if status == 5 then
-          print("Already connected")
-          return
-        end
-        tmr.delay(100000)        
-    end 
-    
-    wifi.setmode(wifi.STATION)
-    wifi.sta.config("Maciej Miklas’s iPhone","mysia2pysia")
-    wifi.sta.connect()
-   
-    for retry = 1, 20 do
-        status = wifi.sta.status()
-        if status == 5 then
-            break
-        end
-        tmr.delay(500000)        
-    end 
-    
-    assert(status == 5, "Could not connect: "..status)
-    local ip = wifi.sta.getip()
-    print("Got Wi-Fi connection:"..ip)
+ntp = {}
+
+function ntp.getTime()
+	local cn = net.createConnection(net.UDP, 0)
+	cn:dns("pool.ntp.org", ntp.request)
+	cn:on("receive", ntp.response)
 end
 
-function listAPs()
-    print("Wi-Fi list")
-    wifi.sta.getap(function (t) 
-            for k,v in pairs(t) do
-                print(k.." : "..v)
-            end
-        end)
+function ntp.request(cn, ip)
+	print("NTP to: ", ip)
+	cn:connect(123, ip)
+	local request = string.char(0x1B) .. string.rep(0x0,47)
+	cn:send(request)
 end
 
-function parseTime(conn, data)
-   print("Time Response: "..data)
-   conn:close()
+function ntp.response(cn, data)
+	cn:close()
+	print("Got response with "..data:len().." bytes")
+	local highw = data:byte(41) * 256 + data:byte(42)
+	local loww = data:byte(43) * 256 + data:byte(44)
+	local timezone = 1
+	local ntpstamp = ( highw * 65536 + loww ) + ( timezone * 3600) -- seconds since 1.1.1900
+	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
+	print(ntp.tsToString(ustamp))
 end
 
-wifiConnect()
-
---http.get("https://www.vowstar.com/nodemcu/", nil, function(code, data)
---    if (code < 0) then
---      print("HTTP request failed")
---    else
---      print(code, data)
---    end
---  end)
-
+function ntp.tsToString(ustamp) 
+	local hour = ustamp % 86400 / 3600
+	local minute = ustamp % 3600 / 60
+	local second = ustamp % 60
+	return string.format("%02u:%02u:%02u", hour, minute, second)
+end
