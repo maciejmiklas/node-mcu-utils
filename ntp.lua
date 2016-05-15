@@ -1,4 +1,5 @@
 ntp = {}
+ntp.responseCallback = nil
 
 local function request(cn, ip)
 	print("NTP to: ", ip)
@@ -22,10 +23,19 @@ local function response(cn, data)
 	local timezone = 1
 	local ntpstamp = ( highw * 65536 + loww ) + ( timezone * 3600) -- seconds since 1.1.1900
 	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
-	print(msTostring(ustamp))
+	
+	if ntp.responseCallback ~= nill then
+		ntp.responseCallback(ustamp)
+	else
+		print("No callback, NTP resp: "..msTostring(ustamp))
+	end	
 end
 
-function ntp.requestTime()
+function ntp:registerResponseCallback(responseCallback)
+	self.responseCallback = responseCallback;
+end
+
+function ntp:requestTime()
 	local cn = net.createConnection(net.UDP, 0)
 	cn:dns("pool.ntp.org", request)
 	cn:on("receive", response)

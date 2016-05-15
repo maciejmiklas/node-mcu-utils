@@ -1,11 +1,10 @@
-local dfl = require "dateformat";
-local df = dfl.new(1463145687)
+require "dateformat";
 
 tests = 0
 local function test(ts, expected)
-	tests = tests +1
+	tests = tests + 1
 	df:setTime(ts)
-	sfStr = df:tostring()
+	sfStr = df:format()
 	if sfStr ~= expected then
 		print("Error: "..ts.."->"..sfStr.." ~= "..expected)
 	end

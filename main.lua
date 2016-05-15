@@ -1,9 +1,12 @@
 require "wlan"
 require "ntp"
+require "dateformat";
 
---require "timetable";
---print("A", new_from_timestamp (1463145687) )
+local function printTime(ts) 
+	df:setTime(ts) 
+	print("NTP Time:", df)
+end
+
+ntp:registerResponseCallback(printTime)
 
 wlan:connect("Maciej Miklas’s iPhone", "mysia2pysia", ntp.requestTime)
-
-print("wlan: ", wlan)

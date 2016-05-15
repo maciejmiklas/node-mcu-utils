@@ -1,8 +1,14 @@
 -- This file is based on: https://github.com/daurnimator/luatz
-
--- 51048
-
-local public = {}
+df = {
+	year  = 1970,
+	month = 1,
+	day   = 1,
+	hour  = 0,
+	min   = 0,
+	sec   = 0,
+	yday  = 0,
+	wday  = 0
+}
 
 local mon_lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 local months_to_days_cumulative = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}
@@ -67,7 +73,7 @@ local function carry ( tens , units , base )
 end
 
 -- ts - seconds since 1.1.1970
-function public:setTime(ts)
+function df:setTime(ts)
 	year = 1970
 	month = 0
 	day = 0
@@ -117,32 +123,16 @@ function public:setTime(ts)
 	self.wday  = day_of_week ( day , month , year )
 end
 
-local function tostring()
-	return string.format("%04u-%02u-%02u %02u:%02u:%02d", self.year, self.month, 
-		self.day, self.hour, self.min, self.sec)
+function df:format()
+	return string.format("%04u-%02u-%02u %02u:%02u:%02d", df.year, df.month, 
+		df.day, df.hour, df.min, df.sec)
+end
+
+local function tostring(df)
+	return df:format()
 end
 
 local mt = {
-	__index = public,
 	__tostring = tostring
 }
-
-function new(ts)
-	date = {
-		year  = 1970,
-		month = 1,
-		day   = 1,
-		hour  = 0,
-		min   = 0,
-		sec   = 0,
-		yday  = 0,
-		wday  = 0,
-	}
-	setmetatable(date, mt)
-	date:setTime(ts)
-	return date
-end
-
-return {
-	new = new
-}
+setmetatable(df, mt)
