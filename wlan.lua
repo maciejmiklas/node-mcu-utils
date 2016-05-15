@@ -1,7 +1,8 @@
-wlan = {}
-function wlan.connect(sid, password, callback)
-	print("Configuring Wi-Fi")
-
+wlan = { sid="SID not set" }
+function wlan:connect(sid, password, callback)
+	print("Configuring Wi-Fi on", sid)
+	self.sid = sid
+	
 	wifi.setmode(wifi.STATION)
 	wifi.sta.config(sid, password)
 	wifi.sta.autoconnect(1)
@@ -18,7 +19,7 @@ function wlan.connect(sid, password, callback)
 		end)
 end
 
-function wlan.APs()
+function wlan:listAPs()
 	print("Wi-Fi list")
 	wifi.sta.getap(function (t)
 		for k,v in pairs(t) do
@@ -26,3 +27,12 @@ function wlan.APs()
 		end
 	end)
 end
+
+local function tostring(wlan)
+	return "SID: "..wlan.sid..", status: "..wifi.sta.status()
+end
+
+local mt = {
+	__tostring = tostring
+}
+setmetatable(wlan, mt)

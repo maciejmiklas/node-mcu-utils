@@ -2,20 +2,17 @@
 
 -- 51048
 
-local public = { }
+local public = {}
+
+local mon_lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+local months_to_days_cumulative = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334}
+
+-- For Sakamoto's Algorithm (day of week)
+local sakamoto = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 		
 local function idiv(n, d)
 	return math.floor(n/d)
 end
-
-local mon_lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
--- Number of days in year until start of month; not corrected for leap years
-local months_to_days_cumulative = { 0 }
-for i = 2, 12 do
-	months_to_days_cumulative [ i ] = months_to_days_cumulative [ i-1 ] + mon_lengths [ i-1 ]
-end
--- For Sakamoto's Algorithm (day of week)
-local sakamoto = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 
 local function is_leap ( y )
 	if (y % 4) ~= 0 then
@@ -58,13 +55,6 @@ local function day_of_week ( day , month , year )
 	return ( year + leap_years_since ( year ) + sakamoto[month] + day ) % 7 + 1
 end
 
-local function borrow ( tens , units , base )
-	local frac = tens % 1
-	units = units + frac * base
-	tens = tens - frac
-	return tens , units
-end
-
 local function carry ( tens , units , base )
 	if units >= base then
 		tens  = tens + idiv ( units , base )
@@ -84,16 +74,6 @@ function public:setTime(ts)
 	hour = 0 
 	min = 0
 	sec = ts
-
-	-- Convert everything (except seconds) to an integer
-	-- by propagating fractional components down.
-	year  , month = borrow ( year  , month , 12 )
-	-- Carry from month to year first, so we get month length correct in next line around leap years
-	year  , month = carry ( year , month , 12 )
-	month , day   = borrow ( month , day   , month_length ( math.floor ( month + 1 ) , year ) )
-	day   , hour  = borrow ( day   , hour  , 24 )
-	hour  , min   = borrow ( hour  , min   , 60 )
-	min   , sec   = borrow ( min   , sec   , 60 )
 
 	-- Propagate out of range values up
 	-- e.g. if `min` is 70, `hour` increments by 1 and `min` becomes 10
@@ -137,14 +117,14 @@ function public:setTime(ts)
 	self.wday  = day_of_week ( day , month , year )
 end
 
-function public:tostring()
+local function tostring()
 	return string.format("%04u-%02u-%02u %02u:%02u:%02d", self.year, self.month, 
 		self.day, self.hour, self.min, self.sec)
 end
 
 local mt = {
 	__index = public,
-	__tostring = public.tostring
+	__tostring = tostring
 }
 
 function new(ts)
