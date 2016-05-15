@@ -1,4 +1,6 @@
--- This file is based on: https://github.com/daurnimator/luatz
+-- #########################################################################
+-- #### Date formatter is based on: https://github.com/daurnimator/luatz ###
+-- #########################################################################
 df = {
 	year  = 1970,
 	month = 1,
