@@ -1,7 +1,8 @@
 wlan = {sid="SID not set"}
+wlan.debug = false
 
 function wlan:connect(sid, password, callback)
-	print("Configuring Wi-Fi on: ", sid)
+	if debug then print("Configuring Wi-Fi on: ", sid) end
 	self.sid = sid
 	
 	wifi.setmode(wifi.STATION)
@@ -11,9 +12,9 @@ function wlan:connect(sid, password, callback)
 
 	tmr.alarm(0, 1000, tmr.ALARM_AUTO, function()
 			local status = wifi.sta.status()
-			print("status", status)
+			if debug then print("status", status) end
 			if(status == 5) then
-				print("Got Wi-Fi connection: ", wifi.sta.getip())
+				if debug then print("Got Wi-Fi connection: ", wifi.sta.getip()) end
 				tmr.stop(0)
 				callback()
 			end
