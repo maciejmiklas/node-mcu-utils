@@ -72,25 +72,25 @@ end
 function getYearOffset(ts)
 	local year, offset
 	if ts >= 1735689600 then
-		year, offset = 2025, 1735689600
+		year, offset = 2025, 1735689600 -- 1.1.2015
 	
 	elseif ts >= 1577836800 then
-		year, offset = 2020, 1577836800
+		year, offset = 2020, 1577836800 -- 1.1.2020
 	
 	elseif ts >= 1420070400 then
-		year, offset = 2015, 1420070400
+		year, offset = 2015, 1420070400 -- 1.1.2015
 	
 	elseif ts >= 1262304000 then
-		year, offset = 2010, 1262304000
+		year, offset = 2010, 1262304000 -- 1.1.2010
 	
 	elseif ts >= 946684800 then
-		year, offset = 2000, 946684800
+		year, offset = 2000, 946684800 -- 1.1.2000
 	
 	elseif ts >= 631152000 then
-		year, offset = 1990, 631152000
+		year, offset = 1990, 631152000 -- 1.1.1990
 	
 	elseif ts >= 315532800 then
-		year, offset = 1980, 315532800
+		year, offset = 1980, 315532800 -- 1.1.1980
 	
 	else
 		year, offset = 1970, 0
@@ -125,7 +125,6 @@ function df:setTime(ts)
 			year = year + 1
 		end
 	end
-	print(rounds)
 	
 	self.year = year
 	self.month = month + 1

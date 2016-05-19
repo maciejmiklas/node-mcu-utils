@@ -4,7 +4,7 @@ ntp.lastTs = nil
 ntp.debug = false
 
 local function request(cn, ip)
-	if debug then print("NTP request: ", ip) end
+	if ntp.debug then print("NTP request: ", ip) end
 	cn:connect(123, ip)
 	local request = string.char(0x1B) .. string.rep(0x0,47)
 	cn:send(request)
@@ -19,7 +19,7 @@ local function response(cn, data)
 	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
 	ntp.lastTs = ustamp
 	
-	if debug then print("NTP response: ", ntp) end
+	if ntp.debug then print("NTP response: ", ntp) end
 	
 	if ntp.responseCallback ~= nill then
 		ntp.responseCallback(ustamp)
