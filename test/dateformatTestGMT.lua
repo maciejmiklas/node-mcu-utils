@@ -3,8 +3,8 @@ require "dateformat";
 tests = 0
 local function test(ts, expected)
 	tests = tests + 1
-	df:setTime(ts)
-	sfStr = df:format()
+	df.setGmtTime(ts)
+	sfStr = df.format()
 	if sfStr ~= expected then
 		print("Error: "..ts.."->"..sfStr.." ~= "..expected)
 	end

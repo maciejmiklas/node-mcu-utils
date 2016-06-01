@@ -3,11 +3,14 @@
 -- #########################################################################
 df = {
 	year  = 1970,
-	month = 1,
-	day   = 1,
-	hour  = 0,
-	min   = 0,
-	sec   = 0
+	month = 1, -- range: 1 to 12
+	day = 1, -- day of the month, range: 1-31
+	hour = 0, -- range: 0 to 23
+	min = 0, -- range: 1 to 60
+	sec = 0, -- range: 1 to 60
+	dayOfYear = 0, -- range: 1 to 361
+	dayOfWeek = 0, -- range: 1 to 7 
+	isLocalTime = false, -- true for local time with daylight saving
 }
 
 local monLengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
@@ -46,19 +49,19 @@ local function isYearsLeapSince(year)
 	return idiv(year, 4) - idiv(year, 100) + idiv(year, 400)
 end
 
-function df:getDayOfYear()
-	local yday = monthsToDaysCumulative[self.month]
-	if self.month > 2 and isYearLeap(self.year) then
+local function getDayOfYear(year, month, day)
+	local yday = monthsToDaysCumulative[month]
+	if month > 2 and isYearLeap(year) then
 		yday = yday + 1
 	end
-	return yday + self.day
+	return yday + day
 end
 
-function df:getDayOfWeek()
-	if self.month < 3 then
-		self.year = self.year - 1
+local function getDayOfWeek(year, month, day)
+	if month < 3 then
+		year = year - 1
 	end
-	return (self.year + isYearsLeapSince(self.year) + sakamoto[self.month] + self.day) % 7 + 1
+	return (year + isYearsLeapSince(year) + sakamoto[month] + day) % 7 + 1
 end
 
 local function carry (tens, units, base)
@@ -69,7 +72,7 @@ local function carry (tens, units, base)
 	return tens , units
 end
 
-function getYearOffset(ts)
+local function getYearOffset(ts)
 	local year, offset
 	if ts >= 1735689600 then
 		year, offset = 2025, 1735689600 -- 1.1.2015
@@ -98,8 +101,39 @@ function getYearOffset(ts)
 	return year, offset
 end
 
+-- gmt - "df" table based on GMT time
+local function isDaylightSavingInUSA(gmt)
+	-- January, february, and december are out.
+    if gmt.month < 3 or gmt.month > 11 then return false end
+    
+    -- April to October are in
+    if gmt.month > 3 and gmt.month < 11 then return true end
+     
+     local previousSunday = gmt.day - gmt.dayOfWeek;
+     -- In march, we are DST if our previous sunday was on or after the 8th.
+     if gmt.month == 3 then return previousSunday >= 8 end
+      
+      -- In november we must be before the first sunday to be dst.
+      -- That means the previous sunday must be before the 1st.
+      return previousSunday <= 0
+end
+
+-- gmt - "df" table based on GMT time
+local function isDaylightSavingInCE(gmt)
+	if gmt.month < 3 or gmt.month > 10 then return false end 
+    if gmt.month > 3 and gmt.month < 10 then return true end 
+    
+   	local previousSunday = gmt.day - gmt.dayOfWeek
+    if gmt.month == 3 then return previousSunday >= 25 end
+    if gmt.month == 10 then return previousSunday < 25 end
+    
+	assert(false, "Error in isDaylightSavingInCE")
+end
+
+-- initializes "df" table with curent time stamp
+--
 -- ts - seconds since 1.1.1970
-function df:setTime(ts)
+local function setTime(ts)
 	local year, offset = getYearOffset(ts)
 	local month = 0
 	local day = 0
@@ -113,7 +147,7 @@ function df:setTime(ts)
 	hour, min = carry(hour, min, 60)
 	day, hour = carry(day, hour, 24)
 	
-	rounds = 0
+	local rounds = 0
 	while true do
 	rounds = rounds + 1
 		local monthLength = getMonthLength(month + 1 , year)
@@ -126,21 +160,47 @@ function df:setTime(ts)
 		end
 	end
 	
-	self.year = year
-	self.month = month + 1
-	self.day = day + 1
-	self.hour = hour 
-	self.min = min
-	self.sec = sec
+	df.year = year
+	df.month = month + 1
+	df.day = day + 1
+	df.hour = hour 
+	df.min = min
+	df.sec = sec
+	df.dayOfYear = getDayOfYear(df.year, df.month, df.day)
+	df.dayOfWeek = getDayOfWeek(df.year, df.month, df.day)
 end
 
-function df:format()
+-- Converts current time to local time in Central Europe taking into account daylight saving.
+-- Before calling this method call #setTime() for initialization.
+--
+-- zoneOffsetSec - time zone offset in seconds
+function df.toLocalCE(zoneOffsetSec)
+	df.isLocalTime = true
+end
+
+-- Converts current time to local time in USA taking into account daylight saving.
+-- Before calling this method call #setTime() for initialization.
+--
+-- zoneOffsetSec - time zone offset in seconds
+function df.toLocalUSA(zoneOffsetSec)
+	df.isLocalTime = true
+end
+
+-- initializes "df" table with curent time stamp with GMT without daylight saving
+--
+-- ts - seconds since 1.1.1970
+function df.setGmtTime(ts)
+	df.isLocalTime = false
+	setTime(ts)
+end
+
+function df.format()
 	return string.format("%04u-%02u-%02u %02u:%02u:%02d", df.year, df.month, 
 		df.day, df.hour, df.min, df.sec)
 end
 
 local function tostring(df)
-	return df:format()
+	return df.format()
 end
 
 local mt = {
