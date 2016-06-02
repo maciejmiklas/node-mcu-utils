@@ -1,9 +1,9 @@
 wlan = {sid="SID not set"}
 wlan.debug = false
 
-function wlan:connect(sid, password, callback)
+function wlan.connect(sid, password, callback)
 	if wlan.debug then print("Configuring Wi-Fi on: ", sid) end
-	self.sid = sid
+	wlan.sid = sid
 	
 	wifi.setmode(wifi.STATION)
 	wifi.sta.config(sid, password)
@@ -21,7 +21,7 @@ function wlan:connect(sid, password, callback)
 		end)
 end
 
-function wlan:listAPs()
+function wlan.listAPs()
 	print("Wi-Fi list")
 	wifi.sta.getap(function (t)
 		for k,v in pairs(t) do

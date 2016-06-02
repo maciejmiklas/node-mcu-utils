@@ -1,7 +1,12 @@
 -- #########################################################################
 -- #### Date formatter is based on: https://github.com/daurnimator/luatz ###
 -- #########################################################################
-df = {
+-- First you have to create instance by calling one of the public methods on "df".
+-- Such instance provides public methods and fields pubined in "pub" table.
+
+DateFormatFactory = { }
+
+local pub = {
 	year  = 1970,
 	month = 1, -- range: 1 to 12
 	day = 1, -- day of the month, range: 1-31
@@ -11,6 +16,10 @@ df = {
 	dayOfYear = 0, -- range: 1 to 361
 	dayOfWeek = 0, -- range: 1 to 7 
 	isLocalTime = false, -- true for local time with daylight saving
+}
+
+local mt = {
+	__index = pub
 }
 
 local monLengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
@@ -133,7 +142,7 @@ end
 -- initializes "df" table with curent time stamp
 --
 -- ts - seconds since 1.1.1970
-local function setTime(ts)
+function pub:setTime(ts)
 	local year, offset = getYearOffset(ts)
 	local month = 0
 	local day = 0
@@ -160,50 +169,29 @@ local function setTime(ts)
 		end
 	end
 	
-	df.year = year
-	df.month = month + 1
-	df.day = day + 1
-	df.hour = hour 
-	df.min = min
-	df.sec = sec
-	df.dayOfYear = getDayOfYear(df.year, df.month, df.day)
-	df.dayOfWeek = getDayOfWeek(df.year, df.month, df.day)
-end
-
--- Converts current time to local time in Central Europe taking into account daylight saving.
--- Before calling this method call #setTime() for initialization.
---
--- zoneOffsetSec - time zone offset in seconds
-function df.toLocalCE(zoneOffsetSec)
-	df.isLocalTime = true
-end
-
--- Converts current time to local time in USA taking into account daylight saving.
--- Before calling this method call #setTime() for initialization.
---
--- zoneOffsetSec - time zone offset in seconds
-function df.toLocalUSA(zoneOffsetSec)
-	df.isLocalTime = true
+	self.year = year
+	self.month = month + 1
+	self.day = day + 1
+	self.hour = hour 
+	self.min = min
+	self.sec = sec
+	self.dayOfYear = getDayOfYear(self.year, self.month, self.day)
+	self.dayOfWeek = getDayOfWeek(self.year, self.month, self.day)
 end
 
 -- initializes "df" table with curent time stamp with GMT without daylight saving
 --
 -- ts - seconds since 1.1.1970
-function df.setGmtTime(ts)
-	df.isLocalTime = false
-	setTime(ts)
+function DateFormatFactory:fromGMT(ts)
+	obj = {}
+	setmetatable(obj, mt)
+	obj:setTime(ts)
+	return obj
 end
 
-function df.format()
-	return string.format("%04u-%02u-%02u %02u:%02u:%02d", df.year, df.month, 
-		df.day, df.hour, df.min, df.sec)
+function pub:format()
+	return string.format("%04u-%02u-%02u %02u:%02u:%02d", self.year, self.month, 
+		self.day, self.hour, self.min, self.sec)
 end
 
-local function tostring(df)
-	return df.format()
-end
-
-local mt = {
-	__tostring = tostring
-}
-setmetatable(df, mt)
+mt.__tostring = function(df) return df:format() end

@@ -20,7 +20,7 @@ end
 
 ntp:registerResponseCallback(printTime)
 
-wlan:connect("Maciej Miklas’s iPhone", "mysia2pysia", ntp.requestTime)
+wlan.connect("Maciej Miklas’s iPhone", "mysia2pysia", ntp.requestTime)
 
 print("RAM callbacks", node.heap())
-
+ 
