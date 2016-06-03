@@ -1,26 +1,29 @@
-print("RAM init", node.heap())
+collectgarbage() print("RAM init", node.heap())
 
 require "wlan"
 require "ntp"
 require "dateformat";
 
-print("RAM require", node.heap())
+collectgarbage() print("RAM require", node.heap())
 
-ntp.debug = true
+ntp = NtpFactory:fromDefaultServer():withDebug()
 wlan.debug = true
 
 local function printTime(ts) 
-	print("RAM before printTime", node.heap())
+	collectgarbage() print("RAM before printTime", node.heap())
 	
-	df.setGmtTime(ts) 
+	df = DateFormatFactory:fromGMT(ts)
 	print("NTP time:", df)
 	
-	print("RAM after printTime", node.heap())
+	collectgarbage() print("RAM after printTime", node.heap())
+	--ntp:requestTime()
 end
 
 ntp:registerResponseCallback(printTime)
 
-wlan.connect("Maciej Miklas’s iPhone", "mysia2pysia", ntp.requestTime)
+wlan.connect("Maciej Miklas’s iPhone", "barabumbam", function() ntp:requestTime() end)
 
-print("RAM callbacks", node.heap())
+collectgarbage() print("RAM callbacks", node.heap())
+ 
+
  

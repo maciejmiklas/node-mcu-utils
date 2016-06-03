@@ -1,12 +1,12 @@
 -- #########################################################################
 -- #### Date formatter is based on: https://github.com/daurnimator/luatz ###
 -- #########################################################################
--- First you have to create instance by calling one of the public methods on "df".
--- Such instance provides public methods and fields pubined in "pub" table.
+-- First you have to create instance by calling one of the dflic methods on "df".
+-- Such instance provides dflic methods and fields dfined in "df" table.
 
 DateFormatFactory = { }
 
-local pub = {
+local df = {
 	year  = 1970,
 	month = 1, -- range: 1 to 12
 	day = 1, -- day of the month, range: 1-31
@@ -19,7 +19,7 @@ local pub = {
 }
 
 local mt = {
-	__index = pub
+	__index = df
 }
 
 local monLengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
@@ -142,7 +142,7 @@ end
 -- initializes "df" table with curent time stamp
 --
 -- ts - seconds since 1.1.1970
-function pub:setTime(ts)
+function df:setTime(ts)
 	local year, offset = getYearOffset(ts)
 	local month = 0
 	local day = 0
@@ -189,7 +189,7 @@ function DateFormatFactory:fromGMT(ts)
 	return obj
 end
 
-function pub:format()
+function df:format()
 	return string.format("%04u-%02u-%02u %02u:%02u:%02d", self.year, self.month, 
 		self.day, self.hour, self.min, self.sec)
 end
