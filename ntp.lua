@@ -1,10 +1,11 @@
 NtpFactory = {}
 
-local ntp = {}
-ntp.responseCallback = nil
-ntp.lastTs = nil
-ntp.debug = false
-ntp.server = nil
+local ntp = {
+	responseCallback = nil,
+	lastTs = nil,
+	debug = false,
+	server = nil
+}
 
 local mt = {__index = ntp}
 

@@ -16,7 +16,6 @@ local function printTime(ts)
 	print("NTP time:", df)
 	
 	collectgarbage() print("RAM after printTime", node.heap())
-	--ntp:requestTime()
 end
 
 ntp:registerResponseCallback(printTime)
@@ -24,6 +23,4 @@ ntp:registerResponseCallback(printTime)
 wlan.connect("Maciej Miklas’s iPhone", "barabumbam", function() ntp:requestTime() end)
 
 collectgarbage() print("RAM callbacks", node.heap())
- 
-
  
