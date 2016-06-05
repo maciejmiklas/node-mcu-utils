@@ -15,7 +15,9 @@ local df = {
 	sec = 0, -- range: 1 to 60
 	dayOfYear = 0, -- range: 1 to 361
 	dayOfWeek = 0, -- range: 1 to 7 
-	isLocalTime = false, -- true for local time with daylight saving
+	gmtOffset = 0, -- not 0 for local time with daylight saving
+	timestampGMT = 0, -- orginal UTC timestamp 
+	zone = nil -- nil for local time. Possible values: CE, USA
 }
 
 local mt = {
@@ -110,7 +112,6 @@ local function getYearOffset(ts)
 	return year, offset
 end
 
--- gmt - "df" table based on GMT time
 local function isDaylightSavingInUSA(gmt)
 	-- January, february, and december are out.
     if gmt.month < 3 or gmt.month > 11 then return false end
@@ -127,7 +128,6 @@ local function isDaylightSavingInUSA(gmt)
       return previousSunday <= 0
 end
 
--- gmt - "df" table based on GMT time
 local function isDaylightSavingInCE(gmt)
 	if gmt.month < 3 or gmt.month > 10 then return false end 
     if gmt.month > 3 and gmt.month < 10 then return true end 
@@ -179,13 +179,25 @@ function df:setTime(ts)
 	self.dayOfWeek = getDayOfWeek(self.year, self.month, self.day)
 end
 
--- initializes "df" table with curent time stamp with GMT without daylight saving
+-- initializes "df" table with GMT time without daylight saving
 --
 -- ts - seconds since 1.1.1970
 function DateFormatFactory:fromGMT(ts)
 	obj = {}
 	setmetatable(obj, mt)
 	obj:setTime(ts)
+	obj.timestampGMT = ts
+	return obj
+end
+
+-- initializes "df" table with Central Europe time without daylight saving
+--
+-- ts - seconds since 1.1.1970
+function DateFormatFactory:fromCE(ts, gmtOffset)
+	obj = {}
+	setmetatable(obj, mt)
+	obj:setTime(ts)
+	obj.timestampGMT = ts
 	return obj
 end
 

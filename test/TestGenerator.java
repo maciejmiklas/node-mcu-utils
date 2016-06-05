@@ -28,13 +28,13 @@ public class TestGenerator {
 	{
 	    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	    try(BufferedWriter out = Files.newBufferedWriter(Paths.get("datesGMT"))) {
+	    try(BufferedWriter out = Files.newBufferedWriter(Paths.get("datesGMT.csv"))) {
 		LocalDateTime date = LocalDateTime.now();
 		for (int i = 0; i < 5000; i++) {
 		    date = date.plusHours(16).plusSeconds(6).minusMinutes(5);
 		    String formatted = date.format(df);
 		    long secs = date.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli() / 1000;
-		    out.write(secs + ";"+ formatted + "\n");
+		    out.write(secs + ","+ formatted + "\n");
 		}
 	    }
 	}
