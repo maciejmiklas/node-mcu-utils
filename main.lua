@@ -12,7 +12,7 @@ wlan.debug = true
 local function printTime(ts) 
 	collectgarbage() print("RAM before printTime", node.heap())
 	
-	df = DateFormatFactory:fromGMT(ts)
+	df = DateFormatFactory:asUTC(ts)
 	print("NTP time:", df)
 	
 	collectgarbage() print("RAM after printTime", node.heap())
