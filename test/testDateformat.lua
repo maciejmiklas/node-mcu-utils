@@ -1,6 +1,7 @@
 require "dateformat";
 
 testCnt = 0;
+errCnt = 0;
 local function parseDate(expDate)
 	local _, _, expYearStr, expMonthStr, expDayStr, expHourStr, expMinStr, expSecStr =
 		string.find(expDate, "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
@@ -20,7 +21,7 @@ function testUTC()
 
 		local msg =  tsStr.." -> "..expDate.." ~= "..fromated
 		assert(fromated == expDate, msg)
-		assert(ts == df.timestampUTC, msg)
+		assert(ts == df.utcSec, msg)
 		assert(df.lt.zone == nil, msg)
 		assert(df.year == expYear, msg)
 		assert(df.month == expMonth, msg)
@@ -31,26 +32,41 @@ function testUTC()
 	end
 end
 
-function testEurope(city, utcOffset)
-	for line in io.lines("test/data/datesEurope_"..city..".csv") do
+function testDST(location, utcOffset, dateFactory)
+	for line in io.lines("test/data/dates"..location..".csv") do
 		testCnt = testCnt + 1
-		local _, _, tsStr, expDate, expDls = string.find(line, "(%d+),(.*),(%d)")
-		local ts = tonumber(tsStr)
+		local _, _, utcSecTxt, expDate, expDls = string.find(line, "(%d+),(.*),(%d)")
+		local utcSec = tonumber(utcSecTxt)
 		local expYear, expMonth, expDay, expHour, expMin, expSec = parseDate(expDate);
-		local df = DateFormatFactory:asEurope(ts, utcOffset)
+		local df = dateFactory(utcSec, utcOffset)
 		local fromated = df:format()
 		local summer = (df.lt.summerTime and "Summer" or "Winter")
 		local expSummer = (expDls == "1" and "Summer" or "Winter")
-		local msg =  tsStr.." -> "..expDate.."("..expSummer..") ~= "..fromated.."("..summer..")"..", Debug: "..df.dd
-		--assert(fromated == expDate, msg)
+		local msg =  location.." -> "..utcSecTxt.." -> "..expDate.."("..expSummer..") ~= "..fromated.."("..summer..")"
 		if(fromated ~= expDate) then
-			print("ERR", msg)
+			errCnt = errCnt + 1
+			print("Error", msg)
 		end
 	end
+end
+
+function testEurope(city, utcOffset)
+	local location = "Europe_"..city
+	local dateFactory = function(ts, utcOffset) return DateFormatFactory:asEurope(ts, utcOffset) end
+	testDST(location, utcOffset, dateFactory)
+end
+
+function testAmerica(city, utcOffset)
+	local location = "America_"..city
+	local dateFactory = function(ts, utcOffset) return DateFormatFactory:asAmerica(ts, utcOffset) end
+	testDST(location, utcOffset, dateFactory)
 end
 
 print("Executing tests....")
 testUTC()
 testEurope("London", 0)
 testEurope("Warsaw", 3600)
-print("Done - Executed "..testCnt.." tests without error :)")
+testEurope("Bucharest", 7200)
+testAmerica("Los_Angeles", -28800)
+
+print("Done - Executed "..testCnt.." tests, errors: "..errCnt)

@@ -1,6 +1,5 @@
--- #########################################################################
--- #### Date formatter is based on: https://github.com/daurnimator/luatz ###
--- #########################################################################
+-- Date formatter is based on: https://github.com/daurnimator/luatz
+--
 -- First you have to create instance by calling one of the dflic methods on "df".
 -- Such instance provides dflic methods and fields dfined in "df" table.
 
@@ -15,11 +14,11 @@ local df = {
 	sec = 0, -- range: 1 to 60
 	dayOfYear = 0, -- range: 1 to 361
 	dayOfWeek = 0, -- range: 1 to 7 
-	timestampUTC = 0, -- orginal UTC timestamp in seconds
+	utcSec = 0, -- UTC time since 1.1.1970 in seconds.
 	
 	-- lt.zone is not nil for local time with daylight saving
 	lt = {
-		zone = nil, -- Possible values: CE, USA
+		zone = nil, -- Possible values: Europe, America
 		utcOffset = 0, -- utc offset in seconds
 		summerTime = nil -- true for summer time, otherwise winter time
 	}
@@ -118,39 +117,47 @@ local function getYearOffset(ts)
 	return year, offset
 end
 
-local function isSummerTimeUSA(df)
-	-- January, february, and december are out.
+-- df - local winter time (without DLS)
+local function isSummerTimeAmerica(df)
     if df.month < 3 or df.month > 11 then return false end
     
-    -- April to October are in
     if df.month > 3 and df.month < 11 then return true end
      
-     local previousSunday = df.day - df.dayOfWeek;
-     -- In march, we are DST if our previous sunday was on or after the 8th.
-     if df.month == 3 then return previousSunday >= 8 end
+    local previousSunday = df.day - df.dayOfWeek;
+     
+    if df.month == 3 then
+    	if previousSunday >= 7 and previousSunday <= 13 and 
+    		df.dayOfWeek == 1 and df.hour <= 1 then return false end
+    	if df.year >= 2020 then return previousSunday >= 7 end
+    	return previousSunday >= 8 
+    end
+    
+    if df.month == 11 then 
+    	if df.day <= 7 and df.dayOfWeek == 1 and df.hour == 0 then return true end
+    	if df.year >= 2020 then return previousSunday < 0 end
+    	return previousSunday <= 0
+    end
       
-      -- In november we must be before the first sunday to be dst.
-      -- That means the previous sunday must be before the 1st.
-      return previousSunday <= 0
+ 	assert(false, "Error in isSummerTimeAmerica")
 end
 
--- df in UTC time
-local function isSummerTimrEurope(df)
+-- df - UTC time without DST
+local function isSummerTimeEurope(df)
 	if df.month < 3 or df.month > 10 then return false end 
     if df.month > 3 and df.month < 10 then return true end 
     
    	local previousSunday = df.day - df.dayOfWeek
-   	df.dd = previousSunday.." "..df.hour.." "..df.dayOfWeek.." "..df.day
     if df.month == 3 then 
    		if df.day >= 25 and df.dayOfWeek == 1 and df.hour == 0 then return false end
     	return previousSunday > 23
     end
+    
     if df.month == 10 then 
     	if df.day >= 25 and df.dayOfWeek == 1 and df.hour == 0 then return true end
     	return previousSunday < 24 
     end
     
-	assert(false, "Error in isDaylightSavingInCE")
+	assert(false, "Error in isSummerTimeEurope")
 end
 
 -- initializes "df" table with curent time stamp
@@ -195,33 +202,55 @@ end
 
 -- initializes "df" table with UTC time without daylight saving
 --
--- ts - seconds since 1.1.1970
-function DateFormatFactory:asUTC(ts)
+-- utcSec - seconds since 1.1.1970
+function DateFormatFactory:asUTC(utcSec)
 	obj = {}
 	setmetatable(obj, mt)
-	obj:setTime(ts)
-	obj.timestampUTC = ts
+	obj:setTime(utcSec)
+	obj.utcSec = utcSec
 	obj.lt = nil
 	return obj
 end
 
--- initializes "df" table with Central Europe time without daylight saving
+-- initializes "df" table with USA time with daylight saving
 --
--- ts - seconds since 1.1.1970
+-- utcSec - UTC seconds since 1.1.1970
 -- utcOffset - UTC offset without daylight saving in seconds used to calculate local time from ts.
-function DateFormatFactory:asEurope(ts, utcOffset)
+function DateFormatFactory:asAmerica(utcSec, utcOffset)
 	obj = {}
 	setmetatable(obj, mt)
-	obj:setTime(ts)
-	obj.timestampUTC = ts
+	obj:setTime(utcSec + utcOffset)
+	obj.utcSec = ts
 	obj.lt.utcOffset = utcOffset
-	obj.lt.zone = "CE"
-	obj.lt.summerTime = isSummerTimrEurope(obj) 
+	obj.lt.zone = "America"
+	obj.lt.summerTime = isSummerTimeAmerica(obj) 
 	
 	if obj.lt.summerTime then
-		obj:setTime(ts + utcOffset+ 3600)
+		obj:setTime(utcSec + utcOffset+ 3600)
 	else
-		obj:setTime(ts + utcOffset)
+		obj:setTime(utcSec + utcOffset)
+	end
+	
+	return obj
+end
+
+-- initializes "df" table with Central Europe time with daylight saving
+--
+-- ts - UTC seconds since 1.1.1970
+-- utcOffset - UTC offset without daylight saving in seconds used to calculate local time from ts.
+function DateFormatFactory:asEurope(utcSec, utcOffset)
+	obj = {}
+	setmetatable(obj, mt)
+	obj:setTime(utcSec)
+	obj.utcSec = utcSec
+	obj.lt.utcOffset = utcOffset
+	obj.lt.zone = "Europe"
+	obj.lt.summerTime = isSummerTimeEurope(obj) 
+	
+	if obj.lt.summerTime then
+		obj:setTime(utcSec + utcOffset+ 3600)
+	else
+		obj:setTime(utcSec + utcOffset)
 	end
 	
 	return obj
