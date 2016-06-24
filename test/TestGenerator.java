@@ -41,8 +41,8 @@ public class TestGenerator {
     private static void generateDates(String cont, String capital) throws IOException {
 	try (BufferedWriter out = Files.newBufferedWriter(Paths.get("dates" + cont + "_" + capital + ".csv"))) {
 	    ZonedDateTime utcDate = ZonedDateTime.now(ZoneOffset.UTC);
-	    for (int i = 0; i < 150000; i++) {
-		utcDate = utcDate.plusHours(i % 2).plusSeconds(i % 20).plusMinutes(i % 20);
+	    for (int i = 0; i < 10000; i++) {
+		utcDate = utcDate.plusHours(i % 15).plusSeconds(i % 60).plusMinutes(i % 30);
 		long utcSecs = utcDate.toInstant().toEpochMilli() / 1000;
 		ZonedDateTime date = ZonedDateTime.ofInstant(utcDate.toInstant(), ZoneId.of(cont + "/" + capital));
 		boolean daylightSavings = date.getZone().getRules().isDaylightSavings(date.toInstant());
@@ -53,9 +53,10 @@ public class TestGenerator {
 
     public static void main(String... a) throws IOException {
 	// printYearOffset();
-	// generateDatesUTC();
+	generateDatesUTC();
 	generateDates("Europe", "London");
 	generateDates("Europe", "Warsaw");
-	//generateDates("America", "Los_Angeles");
+	generateDates("Europe", "Bucharest");
+	generateDates("America", "Los_Angeles");
     }
 }

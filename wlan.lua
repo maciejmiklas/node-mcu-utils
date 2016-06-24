@@ -1,12 +1,11 @@
-wlan = {sid="SID not set"}
+wlan = {ssid="SSID not set"}
 wlan.debug = false
 
-function wlan.connect(sid, password, callback)
-	if wlan.debug then print("Configuring Wi-Fi on: ", sid) end
-	wlan.sid = sid
-	
+function wlan.connect(ssid, password, callback)
+	if wlan.debug then print("Configuring Wi-Fi on: ", ssid) end
+	wlan.ssid = ssid
 	wifi.setmode(wifi.STATION)
-	wifi.sta.config(sid, password)
+	wifi.sta.config(ssid, password)
 	wifi.sta.autoconnect(1)
 	wifi.sta.connect()
 
@@ -31,7 +30,7 @@ function wlan.listAPs()
 end
 
 local function tostring(wlan)
-	return "SID: "..wlan.sid..", status: "..wifi.sta.status()
+	return "SSID: "..wlan.ssid..", status: "..wifi.sta.status()
 end
 
 local mt = {
