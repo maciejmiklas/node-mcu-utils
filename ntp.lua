@@ -39,7 +39,7 @@ function ntp:response(cn, data)
 	local highw = data:byte(41) * 256 + data:byte(42)
 	local loww = data:byte(43) * 256 + data:byte(44)
 	local timezone = 1
-	local ntpstamp = ( highw * 65536 + loww ) + ( timezone * 3600) -- seconds since 1.1.1900
+	local ntpstamp = ( highw * 65536 + loww ) + ( timezone * 3600) - 3600 -- seconds since 1.1.1900
 	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
 	self.lastTs = ustamp
 	

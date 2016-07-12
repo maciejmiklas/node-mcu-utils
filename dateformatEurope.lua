@@ -29,7 +29,7 @@ function df.setEuropeTime(utcSec, utcOffset)
 	df.summerTime = isSummerTimeEurope(df) 
 	
 	if df.summerTime then
-		df.setTime(utcSec + utcOffset+ 3600)
+		df.setTime(utcSec + utcOffset + 3600)
 	else
 		df.setTime(utcSec + utcOffset)
 	end

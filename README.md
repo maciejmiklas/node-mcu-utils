@@ -1,35 +1,30 @@
 This project contains a few utilities for NodeMcu based on ESP8266.
 
-# Date
-Provides functionality to get date from timestamp given in seconds since 1970.01.01
+# Date Format
+Provides functionality to get local date and time from timestamp given in seconds since 1970.01.01
 
 For such code:
 ``` lua
-print("RAM", collectgarbage("count")*1024)
+collectgarbage() print("heap before", node.heap())
 
-require "date";
+require "dateformatEurope";
+local ts = 1463145687
+df.setEuropeTime(ts, 3600) -- function requires GMT offset for your city
 
-date:setTime(1463145687)
+print(string.format("%04u-%02u-%02u %02u:%02u:%02d", 
+    df.year, df.month, df.day, df.hour, df.min, df.sec))
+print("DayOfWeek: ", df.dayOfWeek)
 
-print("Date 1: ", date)
-print("Date 2:", date.year, date.month, date.day, date.hour, date.min, date.sec)
-print("DayOfYear: ", date:getDayOfYear())
-print("DayOfWeek: ", date:getDayOfWeek())
-
-print("RAM", collectgarbage("count")*1024)
+collectgarbage() print("heap after", node.heap())
 ```
 
-you will get this console output:
+you will get this output:
 ``` bash
-RAM 37808
-Date 1:     2016-05-13 13:21:27
-Date 2: 2016    5   13  13  21  27
-DayOfYear:  134
+heap before 44704
+2016-05-13 15:21:27
 DayOfWeek:  6
-RAM 48301
+heap after  39280
 ```
-
-Date is based on: https://github.com/daurnimator/luatz
 
 # Wi-FI access
 It's simple facade for connecting to Wi-Fi. You have to provide connection credentials and function that will be executed after the connection has been established.
@@ -43,7 +38,7 @@ local function printAbc()
     print("ABC")
 end
 
-wlan:connect("free wlan", "12345678", printAbc)
+wlan.connect("free wlan", "12345678", printAbc)
 ```
 
 ``` bash
@@ -55,39 +50,62 @@ Got Wi-Fi connection:   172.20.10.6 255.255.255.240 172.20.10.1
 ABC
 ```
 
-# NTP time
-Simple facade for getting NTP time.
+# NTP Time
+This simple facade connects to given NTP server, request UTC time from it and once response has been received it calls given function. 
 
-First you have to connect to wlan and register callback that will be executed after the connection has been established, in our case we will use NTP script to request time: *ntp.requestTime*. Finally you have to register another callback that will get executed after NTP response has been received: *printTime(ts)*:
+Example below executes following chain: WLAN -> NTP -> Date Format. 
+So in the fist step we are creating WLAN connection and registering callback function that will be executed after connection has been established. This callback function requests time from NTP server (*ntp.requestTime*). 
+On the *ntp* object we are registering another function that will get called after NTP response has been received: *printTime(ts)*.
 
 ``` lua
+collectgarbage() print("RAM init", node.heap())
+
 require "wlan"
 require "ntp"
-require "date";
+require "dateformatEurope";
 
-ntp.debug = true
+collectgarbage() print("RAM after require", node.heap())
+
+ntp = NtpFactory:fromDefaultServer():withDebug()
 wlan.debug = true
 
--- ts is time in seconds since 1970.01.01
 local function printTime(ts) 
-    date:setTime(ts) 
-    print("NTP time:", date)
+    collectgarbage() print("RAM before printTime", node.heap())
+    
+    df.setEuropeTime(ts, 3600)
+    
+    print("NTP Local Time:", string.format("%04u-%02u-%02u %02u:%02u:%02d", 
+        df.year, df.month, df.day, df.hour, df.min, df.sec))
+    print("Summer Time:", df.summerTime)
+    print("Day of Week:", df.dayOfWeek)
+    
+    collectgarbage() print("RAM after printTime", node.heap())
 end
 
 ntp:registerResponseCallback(printTime)
 
-wlan:connect("free wlan", "12345678", ntp.requestTime)
+wlan.connect("free wlan", "12345678", function() ntp:requestTime() end)
+
+collectgarbage() print("RAM callbacks", node.heap())
 ```
 
 and console output:
 
 ``` bash
+RAM init    43328
+RAM after require   30920
 Configuring Wi-Fi on:   free wlan
+RAM callbacks   30688
 status  1
 status  1
 status  5
 Got Wi-Fi connection:   172.20.10.6 255.255.255.240 172.20.10.1
-NTP request:    89.163.209.233
-NTP response:   06:53:31
-NTP Time:   2016-05-19 06:53:31
+NTP request:    pool.ntp.org
+NTP request:    194.29.130.252
+NTP response:   11:59:34
+RAM before printTime    31120
+NTP Local Time: 2016-07-12 13:59:34
+Summer Time:    true
+Day of Week:    3
+RAM after printTime 30928
 ```
