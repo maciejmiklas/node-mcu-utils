@@ -1,12 +1,9 @@
-print("RAM", collectgarbage("count")*1024)
+start = collectgarbage("count") * 1024
+require "dateformatEurope";
 
-require "dateformat";
+df.setEuropeTime(1463145687, 3600)
 
-local date = DateFormatFactory:asEurope(1463145687, 3600)
+print("Date 2:", df.year, df.month, df.day, df.hour, df.min, df.sec)
+print("DayOfWeek: ", df.dayOfWeek)
 
-print("Date 1: ", date)
-print("Date 2:", date.year, date.month, date.day, date.hour, date.min, date.sec)
-print("DayOfYear: ", date.dayOfYear)
-print("DayOfWeek: ", date.dayOfWeek)
-
-print("RAM", collectgarbage("count")*1024)
+print("RAM consumed", collectgarbage("count") * 1024 - start)
