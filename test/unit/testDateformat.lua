@@ -16,7 +16,7 @@ function format()
 end
 
 function testUTC()
-	for line in io.lines("test/data/datesUTC.csv") do
+	for line in io.lines("test/unit/data/datesUTC.csv") do
 		testCnt = testCnt + 1
 		local _, _, tsStr, expDate = string.find(line, "(%d+),(.*)")
 		local ts = tonumber(tsStr)
@@ -37,7 +37,7 @@ function testUTC()
 end
 
 function testLocal(location, utcOffset, timeFunction)
-	for line in io.lines("test/data/dates"..location..".csv") do
+	for line in io.lines("test/unit/data/dates"..location..".csv") do
 		testCnt = testCnt + 1
 		local _, _, utcSecTxt, expDate, expDls = string.find(line, "(%d+),(.*),(%d)")
 		local utcSec = tonumber(utcSecTxt)

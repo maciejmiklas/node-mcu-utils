@@ -10,7 +10,7 @@ local ntp = {
 local mt = {__index = ntp}
 
 function NtpFactory:fromDefaultServer()
-	return self:fromServerName("pool.ntp.org")
+	return self:fromServer("pool.ntp.org")
 end
 
 -- enables debug for all NTP instances
@@ -20,7 +20,7 @@ function ntp:withDebug()
 end
 
 -- creates NTP instance from DNS server name
-function NtpFactory:fromServerName(server)
+function NtpFactory:fromServer(server)
 	obj = {}
 	setmetatable(obj, mt)
 	obj.server = server

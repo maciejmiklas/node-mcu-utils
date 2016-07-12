@@ -1,7 +1,7 @@
 wlan = {ssid="SSID not set"}
 wlan.debug = false
 
-function wlan.connect(ssid, password, callback)
+function wlan.connect(ssid, password, callback, timerId)
 	if wlan.debug then print("Configuring Wi-Fi on: ", ssid) end
 	wlan.ssid = ssid
 	wifi.setmode(wifi.STATION)
@@ -9,12 +9,14 @@ function wlan.connect(ssid, password, callback)
 	wifi.sta.autoconnect(1)
 	wifi.sta.connect()
 
-	tmr.alarm(0, 1000, tmr.ALARM_AUTO, function()
+	if timerId == nil then timerId = 0 end
+	
+	tmr.alarm(timerId, 1000, tmr.ALARM_AUTO, function()
 			local status = wifi.sta.status()
 			if wlan.debug then print("status", status) end
 			if(status == 5) then
 				if wlan.debug then print("Got Wi-Fi connection: ", wifi.sta.getip()) end
-				tmr.stop(0)
+				tmr.stop(timerId)
 				callback()
 			end
 		end)
