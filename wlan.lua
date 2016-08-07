@@ -2,7 +2,7 @@ wlan = {ssid="SSID not set"}
 wlan.debug = false
 
 function wlan.connect(ssid, password, callback, timerId)
-	if wlan.debug then print("Configuring Wi-Fi on: ", ssid) end
+	if wlan.debug then print("Configuring WiFi on: ", ssid) end
 	wlan.ssid = ssid
 	wifi.setmode(wifi.STATION)
 	wifi.sta.config(ssid, password)
@@ -15,7 +15,7 @@ function wlan.connect(ssid, password, callback, timerId)
 			local status = wifi.sta.status()
 			if wlan.debug then print("status", status) end
 			if(status == 5) then
-				if wlan.debug then print("Got Wi-Fi connection: ", wifi.sta.getip()) end
+				if wlan.debug then print("Got WiFi connection: ", wifi.sta.getip()) end
 				tmr.stop(timerId)
 				callback()
 			end
@@ -23,7 +23,7 @@ function wlan.connect(ssid, password, callback, timerId)
 end
 
 function wlan.listAPs()
-	print("Wi-Fi list")
+	print("WiFi list")
 	wifi.sta.getap(function (t)
 		for k,v in pairs(t) do
 			print(k, v)
