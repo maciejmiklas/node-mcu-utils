@@ -3,8 +3,8 @@ require "ntp"
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 nc = {
 	current = 0, -- Curent UTC time in seconds since 1.1.1970. 
-	lastSync = -1, -- Seconds since last sync with NTP server
-	syncPeriod = 86400, -- 86400 - 24 hours
+	lastSyncSec = -1, -- Seconds since last sync with NTP server
+	syncPeriodSec = 86400, -- 86400 - 24 hours
 	debug = false
 }
 
@@ -14,14 +14,14 @@ local pr = {
 
 local function onNtpResponse(ts)
 	nc.current = ts
-	nc.lastSync = 0
+	nc.lastSyncSev = 0
 end
 
 local function onTimerEvent()
 	nc.current = nc.current + 1
-	nc.lastSync = nc.lastSync + 1
+	nc.lastSyncSec = nc.lastSyncSec + 1
 	
-	if nc.lastSync == nc.syncPeriod then
+	if nc.lastSyncSec == nc.syncPeriodSec then
 		wlan.execute(function() pr.ntp:requestTime() end)
 	end	
 end
@@ -30,13 +30,13 @@ end
 -- without delay.
 --
 -- ntpServer - URL of NTP server or nil to use default one
--- syncPeriod - period in seconds to sync with NTP server. 24 hours if nil.
+-- syncPeriodSec - period in seconds to sync with NTP server. 24 hours if nil.
 -- timerId - timer id for tmr module. 1 if nil.
-function nc.start(ntpServer, syncPeriod, timerId)
+function nc.start(ntpServer, syncPeriodSec, timerId)
 	assert(pr.ntp == nil)
 	
 	if timerId == nil then timerId = 1 end
-	if syncPeriod ~= nil then nc.syncPeriod = syncPeriod end
+	if syncPeriodSec ~= nil then nc.syncPeriodSec = syncPeriodSec end
 
 	if ntpServer ~= nil then
 		pr.ntp = NtpFactory:fromServer(ntpServer)
