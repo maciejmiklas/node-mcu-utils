@@ -9,7 +9,7 @@ function wlan.setup(ssid, password)
 end
 
 function wlan.execute(callback)
-	if wifi.sta.status() == 5 then
+	if wifi.sta.status() == 5 and wifi.sta.getip() ~= nil then
 		if wlan.debug then print("WiFi already connected") end
 		callback()
 		return
@@ -20,9 +20,9 @@ function wlan.execute(callback)
 
 	tmr.alarm(wlan.timerId, 1000, tmr.ALARM_AUTO, function()
 		local status = wifi.sta.status()
-		if wlan.debug then print("status", status) end
-		if status == 5 then
-			if wlan.debug then print("Got WiFi connection: ", wifi.sta.getip()) end
+		local ip = wifi.sta.getip();
+		if wlan.debug then print("WiFi status:", status, "IP:", ip) end
+		if status == 5 and ip ~= nil then
 			tmr.stop(wlan.timerId)
 			callback()
 		end

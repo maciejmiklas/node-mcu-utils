@@ -7,6 +7,7 @@ yaw = {
 	country = "de",
 	host = "query.yahooapis.com",
 	debug = false,
+	trace = false,
 	timerId = 2,
 	
 	-- weather tabel contains forecast for x days
@@ -18,10 +19,12 @@ yaw = {
 	--    code - https://developer.yahoo.com/weather/documentation.html#codes
 	--    date - date in form: 31 Aug 2016
 	--    text - description, like: Partly Cloudy, Thunderstorms or Sunny
+	-- examples:
+	--          - yaw.weather[1].low
+	--          - yaw.weather[2].date
 	weather = nil
 }
-
-local client
+local con
 
 local function parseWeather(jsonStr)
 	local json = cjson.decode(jsonStr)
@@ -36,31 +39,50 @@ local function parseWeather(jsonStr)
 	return weather;
 end
 
-local function parseBody(body)
+local function findJsonEnd(body)
+	local len = string.len(body)
+	for idx = len, 1, -1 do 
+		local char = body:sub(idx, idx)
+		if char == '}' then return idx end
+	end
+	return len
+end
+
+local function extraactJson(body)
 	local bodyStart = string.find(body, "\n\r", 1)
 	local jsonStart = string.find(body, "{", bodyStart)
-	local len = string.len(body)
-	local jsonStr = string.sub(body, jsonStart, len)
-	if yaw.debug then print("Json: ", jsonStr) end
+	local jsonEnd = findJsonEnd(body);
+	local jsonStr = string.sub(body, jsonStart, jsonEnd)
+	if yaw.debug then print("YAW Json:'"..jsonStr.."'") end
 	return jsonStr
 end
 
 local function onReceive(cn, body)
 	cn:close()
-	if yaw.debug then print("Weather response: ", body) end
-	local jsonStr = parseBody(body)
+	if yaw.trace then print("YAW response:", body) end
+	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
 end
 
 local function onConnection(sck, c)	
-	local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3.."  HTTP/1.1\r\nHost: "..yaw.host.."\r\nAccept: */*\r\n\r\n"
-	if yaw.debug then print("Weather request: ", get) end
+	local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
+		"  HTTP/1.1\r\nHost: "..yaw.host.."\r\nAccept: */*\r\n\r\n"
+		
+	if yaw.debug then print("YAW request:", get) end
+	
 	sck:send(get)
 end
 
 function yaw.start()
-	client = net.createConnection(net.TCP, 0)
-	client:on("receive", onReceive)
-	client:on("connection", onConnection)
-	client:connect(80, "98.137.200.255")	
+	con = net.createConnection(net.TCP, 0)
+	con:on("receive", onReceive)
+	con:on("connection", onConnection)
+	
+	if yaw.trace then 
+		con:on("disconnection", function() print("YAW disconnection") end)
+		con:on("sent", function() print("YAW sent") end)
+		con:on("reconnection", function() print("YAW reconnection") end)
+	end
+	
+	con:connect(80, "98.137.200.255")
 end

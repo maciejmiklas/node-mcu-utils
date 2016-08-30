@@ -14,6 +14,15 @@ function scmd.CLS()
 	uart.write(0, ntpc.lastSyncSec.."\n")
 end
 
+-- 1 if clock has been synched at least once, 0 otherwise 
+function scmd.CIE()
+	if ntpc.lastSyncSec == -1 then
+		uart.write(0, "0\n")
+	else 	
+		uart.write(0, "1\n")
+	end
+end
+
 -- return hours of local time in 24h format, e.g.: 23:11
 function scmd.CH2()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)

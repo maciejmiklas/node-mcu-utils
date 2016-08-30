@@ -8,6 +8,7 @@ local ntp = {
 }
 
 local mt = {__index = ntp}
+local cn
 
 function NtpFactory:fromDefaultServer()
 	return self:fromServer("pool.ntp.org")
@@ -28,7 +29,11 @@ function NtpFactory:fromServer(server)
 end
 
 local function request(cn, ip)
-	if ntp.debug then print("NTP request: ", ip) end
+	if ip == nil then 
+		if ntp.debug then print("DNS error for NTP") end
+		return 
+	end
+	if ntp.debug then print("NTP request IP:", ip) end
 	cn:connect(123, ip)
 	local request = string.char(0x1B) .. string.rep(0x0,47)
 	cn:send(request)
@@ -43,7 +48,7 @@ function ntp:response(cn, data)
 	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
 	self.lastTs = ustamp
 	
-	if ntp.debug then print("NTP response: ", self) end
+	if ntp.debug then print("NTP response:", self) end
 	
 	if self.responseCallback ~= nill then
 		self.responseCallback(ustamp)
@@ -58,9 +63,9 @@ function ntp:registerResponseCallback(responseCallback)
 end
 
 function ntp:requestTime()
-	if ntp.debug then print("NTP request: ", self.server) end
+	if ntp.debug then print("NTP request:", self.server) end
 
-	local cn = net.createConnection(net.UDP, 0)
+	cn = net.createConnection(net.UDP, 0)
 	cn:dns(self.server, request)
 	cn:on("receive", function(cn, data) self:response(cn, data) end)
 end

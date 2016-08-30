@@ -1,15 +1,18 @@
 require "credentials"
 require "serialAPI"
 require "serialAPIClock"
-require "yahooweather"
+require "serialAPIYahooWeather"
+require "yahooWeather"
 
 wlan.debug = true
 sapi.debug = true
 sapiClock.debug = true
 ntpc.debug = true
-yaw.debug = false
+yaw.debug = true
+yaw.trace = false
 
 ntpc.syncPeriodSec = 1800
+sapi.baud = 115200
 
 -- setup wlan required by NTP clokc
 wlan.setup(cred.ssid, cred.password)
