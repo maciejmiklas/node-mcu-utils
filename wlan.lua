@@ -1,7 +1,6 @@
-wlan = {ssid="SSID not set", debug = false}
+wlan = {ssid="SSID not set", debug = false, timerId = 0}
 
-function wlan.setup(ssid, password, timerId)
-	if timerId == nil then wlan.timerId = 0 else wlan.timerId = timerId end
+function wlan.setup(ssid, password)
 	wlan.ssid = ssid
 	wlan.password = password
 	wifi.setmode(wifi.STATION)

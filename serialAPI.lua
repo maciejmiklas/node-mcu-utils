@@ -23,7 +23,7 @@ function scmd.GFR()
 	uart.write(0, node.heap().."\n")
 end
 
-function sapi.setup()
+function sapi.start()
 	gpio.mode(sapi.pin, gpio.OUTPUT)
 	
 	-- configure for 9600, 8N1, no echo

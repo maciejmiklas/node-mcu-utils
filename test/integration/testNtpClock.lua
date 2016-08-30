@@ -6,16 +6,16 @@ require "wlan";
 
 collectgarbage() print("RAM after require", node.heap())
 
-nc.debug = true
+ntpc.debug = true
 wlan.debug = true
 wlan.setup(cred.ssid, cred.password)
 
-wlan.execute(function() nc.start("pool.ntp.org", 3600) end)
+wlan.execute(function() ntpc.start("pool.ntp.org", 3600) end)
 
 local function printTime()
 	collectgarbage() print("\nRAM in printTime", node.heap())
 
-	df.setEuropeTime(nc.current, 3600)
+	df.setEuropeTime(ntpc.current, 3600)
 
 	print("Time:", string.format("%04u-%02u-%02u %02u:%02u:%02d",
 		df.year, df.month, df.day, df.hour, df.min, df.sec))

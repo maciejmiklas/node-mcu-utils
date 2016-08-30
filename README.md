@@ -115,7 +115,7 @@ RAM after printTime 30928
 # Ntp Clock
 This script provides functionality to run a clock with precision of one second and to synchronize this clock every few hours with NTP server. 
 
-In the code below we first configure WiFi access. Once the WiFi access has been established it will call *nc.start()*. This function will start Clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over this variable *nc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *nc.current* and prints it as local time. 
+In the code below we first configure WiFi access. Once the WiFi access has been established it will call *ntpc.start()*. This function will start Clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over this variable *ntpc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
 
 ```lua
 collectgarbage() print("RAM init", node.heap())
@@ -126,16 +126,16 @@ require "wlan";
 
 collectgarbage() print("RAM after require", node.heap())
 
-nc.debug = true
+ntpc.debug = true
 wlan.debug = true
 
 wlan.setup("free wlan", "12345678")
-wlan.execute(function() nc.start("pool.ntp.org", 60) end)
+wlan.execute(function() ntpc.start("pool.ntp.org", 60) end)
 
 local function printTime() 
     collectgarbage() print("RAM in printTime", node.heap())
     
-    df.setEuropeTime(nc.current, 3600)
+    df.setEuropeTime(ntpc.current, 3600)
     
     print("Time:", string.format("%04u-%02u-%02u %02u:%02u:%02d", 
         df.year, df.month, df.day, df.hour, df.min, df.sec))
@@ -203,10 +203,11 @@ Day of Week:    2
 Executing multiple scripts can lead to out of memory issues. One possibility to solve it is to build custom firmware containing only minimal set of node-mcu modules. 
 In order to build custom firmware go to http://nodemcu-build.com . Below you will find list of lua scripts and modules that they use. Additionally you always need 'node' and 'file'.
 
-| Module | Date Format | WiFi access  | NTP Clock | Serial Clock |
-|--------|-------------|--------------|-----------|------------|
-|   net  |             |       x      |     x     |            |
-|  timer |             |       x      |     x     |            |
-|  uart  |             |              |           |      x     |
-|  GPIO  |             |              |           |      x     |
-|  WiFi  |             |       x      |     x     |      x     |
+| Module | Date Format | WiFi access  | NTP Clock | Serial Clock | Weather | Serial Weather |
+|--------|-------------|--------------|-----------|------------|------------|------------|
+|   net  |             |       x      |     x     |      x     |      x     |      x     |
+|  timer |             |       x      |     x     |      x     |      x     |      x     |
+|  UART  |             |              |           |      x     |      x     |      x     |
+|  GPIO  |             |              |           |      x     |      x     |      x     |
+|  WiFi  |             |       x      |     x     |      x     |      x     |      x     |
+|  CJSON |             |       x      |     x     |      x     |      x     |      x     |
