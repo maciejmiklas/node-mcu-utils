@@ -5,11 +5,13 @@ yaw = {
 	url3 = "%22)%20and%20u%3D%27c%27%20limit%203&format=json",
 	city = "munic",
 	country = "de",
-	host = "query.yahooapis.com",
+	server = "query.yahooapis.com",
+	port = 80,
 	debug = false,
 	trace = false,
 	timerId = 2,
-	
+	syncPeriodSec = 3600, -- sync weather every hour
+
 	-- weather tabel contains forecast for x days
 	-- K: day number starting from 1, where 1 is today, 2 tomorrow, and so on.
 	-- V: table containing following keys:
@@ -25,6 +27,11 @@ yaw = {
 	weather = nil
 }
 local con
+local lastSyncSec = 0 -- time in milis of last sync with yahoo server
+
+function yaw.getLastSyncSec()
+	return (tmr.time() - lastSyncSec)
+end
 
 local function parseWeather(jsonStr)
 	local json = cjson.decode(jsonStr)
@@ -41,7 +48,7 @@ end
 
 local function findJsonEnd(body)
 	local len = string.len(body)
-	for idx = len, 1, -1 do 
+	for idx = len, 1, -1 do
 		local char = body:sub(idx, idx)
 		if char == '}' then return idx end
 	end
@@ -59,30 +66,51 @@ end
 
 local function onReceive(cn, body)
 	cn:close()
+	con = nil
 	if yaw.trace then print("YAW response:", body) end
 	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
+	lastSyncSec = tmr.time()
 end
 
-local function onConnection(sck, c)	
+local function onConnection(sck, c)
 	local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
-		"  HTTP/1.1\r\nHost: "..yaw.host.."\r\nAccept: */*\r\n\r\n"
-		
+		"  HTTP/1.1\r\nHost: "..yaw.server.."\r\nAccept: */*\r\n\r\n"
+
 	if yaw.debug then print("YAW request:", get) end
-	
+
 	sck:send(get)
 end
 
-function yaw.start()
+local function onDNSResponse(con, ip)
+	if ip == nil then
+		if yaw.debug then print("DNS error for:", yaw.server) end
+		return
+	end
+
+	con:connect(yaw.port, ip)
+end
+
+local function requestWeather()
+	if yaw.debug then print("Weather request:", yaw.server) end
+
 	con = net.createConnection(net.TCP, 0)
 	con:on("receive", onReceive)
 	con:on("connection", onConnection)
-	
-	if yaw.trace then 
+	con:dns(yaw.server, onDNSResponse)
+
+	if yaw.trace then
 		con:on("disconnection", function() print("YAW disconnection") end)
 		con:on("sent", function() print("YAW sent") end)
 		con:on("reconnection", function() print("YAW reconnection") end)
 	end
-	
-	con:connect(80, "98.137.200.255")
+end
+
+local function sync()
+	wlan.execute(requestWeather)
+end
+
+function yaw.start()
+	sync()
+	tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, sync)
 end

@@ -9,21 +9,19 @@ ntpc = {
 	timerId = 1
 }
 
-local pr = {
-	ntp = nil
-}
+local ntp
 
 local function onNtpResponse(ts)
 	ntpc.current = ts
 	ntpc.lastSyncSev = 0
 end
 
-local function onTimerEvent()
+local function sync()
 	ntpc.current = ntpc.current + 1
 	ntpc.lastSyncSec = ntpc.lastSyncSec + 1
 	
 	if ntpc.lastSyncSec == ntpc.syncPeriodSec then
-		wlan.execute(function() pr.ntp:requestTime() end)
+		wlan.execute(function() ntp:requestTime() ntpc.lastSyncSec = 0 end)
 	end	
 end
 
@@ -32,16 +30,16 @@ end
 --
 -- ntpServer - URL of NTP server or nil to use default one
 function ntpc.start(ntpServer)
-	assert(pr.ntp == nil)
+	assert(ntp == nil)
 
 	if ntpServer ~= nil then
-		pr.ntp = NtpFactory:fromServer(ntpServer)
+		ntp = NtpFactory:fromServer(ntpServer)
 	else
-		pr.ntp = NtpFactory:fromDefaultServer()
+		ntp = NtpFactory:fromDefaultServer()
 	end
 
-	if ntpc.debug then pr.ntp:withDebug() end
-	pr.ntp:registerResponseCallback(onNtpResponse)
-	pr.ntp:requestTime()
-	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, onTimerEvent)
+	if ntpc.debug then ntp:withDebug() end
+	ntp:registerResponseCallback(onNtpResponse)
+	wlan.execute(function() ntp:requestTime() end)
+	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, sync)
 end

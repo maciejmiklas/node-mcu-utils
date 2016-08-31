@@ -11,17 +11,19 @@ function scmd.YIE()
 	end
 end
 
+-- seconds since last sync with NTP server
+function scmd.YLS()
+	uart.write(0, yaw.getLastSyncSec().."\n")
+end
+
 -- "scmd.YFx" returns forecast for given param, where x is day: 1 - today, 2 - tommorow, and so on. 
 -- Possible params can be found at: yahooWeather.lua -> yaw.weather
-
 function scmd.YF1(param)
 	uart.write(0, yaw.weather[1][param].."\n")
 end
-
 function scmd.YF2(param)
 	uart.write(0, yaw.weather[2][param].."\n")
 end
-
 function scmd.YF3(param)
 	uart.write(0, yaw.weather[3][param].."\n")
 end
