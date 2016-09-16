@@ -1,12 +1,13 @@
 This project contains a few utilities for NodeMcu based on ESP8266.
 
-# Date Format (dateformat.lua, dateformatAmerica.lua, dateformatEurope.lua)
+# Date Format
 Provides functionality to get local date and time from timestamp given in seconds since 1970.01.01
 
 For such code:
 ``` lua
 collectgarbage() print("heap before", node.heap())
 
+require "dateformat"
 require "dateformatEurope"
 local ts = 1463145687
 df.setEuropeTime(ts, 3600) -- function requires GMT offset for your city
@@ -26,7 +27,7 @@ DayOfWeek:  6
 heap after  39280
 ```
 
-# WiFi access (wlan.lua)
+# WiFi access
 It's simple facade for connecting to WiFi. You have to provide connection credentials and function that will be executed after the connection has been established.
 
 *execute(...)* connects to WiFi and this can take some time. You can still call this method multiple times. In such case callbacks will be stored in the queue and executed after WiFi connection has been established.
@@ -53,7 +54,7 @@ Got WiFi connection:   172.20.10.6 255.255.255.240 172.20.10.1
 ABC
 ```
 
-# NTP Time (ntp.lua)
+# NTP Time
 This simple facade connects to given NTP server, request UTC time from it and once response has been received it calls given callback function. 
 
 Example below executes following chain: WiFi -> NTP -> Date Format. 
@@ -319,8 +320,6 @@ Showers
 17 Sep 2016
 
 ```
-
-
 # Firmware
 Executing multiple scripts can lead to out of memory issues. One possibility to solve it is to build custom firmware containing only minimal set of node-mcu modules: cjson, file, gpio, net, node, tmr, uart, wifi. This blog provides detailed upgrade procedure: http://maciej-miklas.blogspot.de/2016/08/installing-nodemcu-v15-on-eps8266-esp.html
 
