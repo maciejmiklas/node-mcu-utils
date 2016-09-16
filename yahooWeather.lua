@@ -24,7 +24,8 @@ yaw = {
 	-- examples:
 	--          - yaw.weather[1].low
 	--          - yaw.weather[2].date
-	weather = nil
+	weather = nil,
+	responseCallback = nil
 }
 local con
 local lastSyncSec = 0 -- time in milis of last sync with yahoo server
@@ -71,6 +72,9 @@ local function onReceive(cn, body)
 	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
 	lastSyncSec = tmr.time()
+	if yaw.responseCallback ~= nil then
+		yaw.responseCallback()
+	end		
 end
 
 local function onConnection(sck, c)
@@ -87,7 +91,6 @@ local function onDNSResponse(con, ip)
 		if yaw.debug then print("DNS error for:", yaw.server) end
 		return
 	end
-
 	con:connect(yaw.port, ip)
 end
 

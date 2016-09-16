@@ -4,11 +4,11 @@ require "serialAPIClock"
 require "serialAPIYahooWeather"
 require "yahooWeather"
 
-wlan.debug = true
-sapi.debug = true
-sapiClock.debug = true
-ntpc.debug = true
-yaw.debug = true
+wlan.debug = false
+sapi.debug = false
+sapiClock.debug = false
+ntpc.debug = false
+yaw.debug = false
 yaw.trace = false
 
 ntpc.syncPeriodSec = 900 -- 15 min
@@ -26,5 +26,3 @@ ntpc.start("pool.ntp.org")
 
 -- start yahoo weather with serial API
 yaw.start()
-
-
