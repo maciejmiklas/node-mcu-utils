@@ -38,7 +38,8 @@ local function printAbc()
     print("ABC")
 end
 
-wlan.connect("free wlan", "12345678", printAbc)
+wlan.setup("free wlan", "12345678")
+wlan.execute(printAbc)
 ```
 
 ``` bash
@@ -84,7 +85,8 @@ end
 
 ntp:registerResponseCallback(printTime)
 
-wlan.connect("free wlan", "12345678", function() ntp:requestTime() end)
+wlan.setup("free wlan", "12345678")
+wlan.execute(function() ntp:requestTime() end)
 
 collectgarbage() print("RAM callbacks", node.heap())
 ```
@@ -127,7 +129,8 @@ collectgarbage() print("RAM after require", node.heap())
 nc.debug = true
 wlan.debug = true
 
-wlan.connect("free wlan", "12345678", function() nc.start("pool.ntp.org", 60) end)
+wlan.setup("free wlan", "12345678")
+wlan.execute(function() nc.start("pool.ntp.org", 60) end)
 
 local function printTime() 
     collectgarbage() print("RAM in printTime", node.heap())
@@ -146,15 +149,64 @@ tmr.alarm(2, 30000, tmr.ALARM_AUTO, printTime)
 so this is the output:
 
 ```bash
+RAM init    43784
+RAM after require   29408
+Configuring WiFi on:    free wlan
+status  1
+status  5
+Got WiFi connection:    192.168.2.113   255.255.255.0   192.168.2.1
+
+NTP request:    pool.ntp.org
+NTP request:    195.50.171.101
+NTP response:   17:09:46
+
+RAM in printTime    29664
+Time:   2016-08-08 19:10:08
+Summer Time:    true
+Day of Week:    2
+
+RAM in printTime    29808
+Time:   2016-08-08 19:10:38
+Summer Time:    true
+Day of Week:    2
+
+NTP request:    pool.ntp.org
+NTP request:    195.50.171.101
+NTP response:   17:10:46
+
+RAM in printTime    29680
+Time:   2016-08-08 19:11:08
+Summer Time:    true
+Day of Week:    2
+
+RAM in printTime    29808
+Time:   2016-08-08 19:11:38
+Summer Time:    true
+Day of Week:    2
+
+NTP request:    pool.ntp.org
+NTP request:    131.188.3.221
+NTP response:   17:11:46
+
+RAM in printTime    29680
+Time:   2016-08-08 19:12:08
+Summer Time:    true
+Day of Week:    2
+
+RAM in printTime    29808
+Time:   2016-08-08 19:12:38
+Summer Time:    true
+Day of Week:    2
 ```
 
 # Firmware
 Executing multiple scripts can lead to out of memory issues. One possibility to solve it is to build custom firmware containing only minimal set of node-mcu modules. 
 In order to build custom firmware go to http://nodemcu-build.com . Below you will find list of lua scripts and modules that they use. Additionally you always need 'node' and 'file'.
 
-| Module | Date Format | WiFi access | NTP Clock | Serial API |
+| Module | Date Format | WiFi access  | NTP Clock | Serial Clock |
 |--------|-------------|--------------|-----------|------------|
 |   net  |             |       x      |     x     |            |
 |  timer |             |       x      |     x     |            |
-|  urat  |             |              |           |            |
+|  uart  |             |              |           |      x     |
+|  GPIO  |             |              |           |      x     |
 |  WiFi  |             |       x      |     x     |      x     |

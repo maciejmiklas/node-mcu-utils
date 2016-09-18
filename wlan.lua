@@ -1,32 +1,32 @@
 wlan = {ssid="SSID not set"}
 wlan.debug = false
 
-function wlan.connect(ssid, password, callback, timerId)
-	if wlan.debug then print("Configuring WiFi on: ", ssid) end
+function wlan.setup(ssid, password, timerId)
+	if timerId == nil then wlan.timerId = 0 else wlan.timerId = timerId end
 	wlan.ssid = ssid
+	wlan.password = password
 	wifi.setmode(wifi.STATION)
-	wifi.sta.config(ssid, password)
+	wifi.sta.config(wlan.ssid, wlan.password)
 	wifi.sta.autoconnect(1)
-	wifi.sta.connect()
-
-	if timerId == nil then timerId = 0 end
-	
-	tmr.alarm(timerId, 1000, tmr.ALARM_AUTO, function()
-			local status = wifi.sta.status()
-			if wlan.debug then print("status", status) end
-			if(status == 5) then
-				if wlan.debug then print("Got WiFi connection: ", wifi.sta.getip()) end
-				tmr.stop(timerId)
-				callback()
-			end
-		end)
 end
 
-function wlan.listAPs()
-	print("WiFi list")
-	wifi.sta.getap(function (t)
-		for k,v in pairs(t) do
-			print(k, v)
+function wlan.execute(callback)
+	if wifi.sta.status() == 5 then
+		if wlan.debug then print("WiFi already connected") end
+		callback()
+		return
+	end
+
+	if wlan.debug then print("Connecting to WiFi...") end
+	wifi.sta.connect()
+
+	tmr.alarm(wlan.timerId, 1000, tmr.ALARM_AUTO, function()
+		local status = wifi.sta.status()
+		if wlan.debug then print("status", status) end
+		if status == 5 then
+			if wlan.debug then print("Got WiFi connection: ", wifi.sta.getip()) end
+			tmr.stop(wlan.timerId)
+			callback()
 		end
 	end)
 end

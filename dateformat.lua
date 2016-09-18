@@ -10,7 +10,7 @@ df = {
 	hour = 0, -- range: 0 to 23
 	min = 0, -- range: 1 to 60
 	sec = 0, -- range: 1 to 60
-	dayOfWeek = 0, -- range: 1 to 7 
+	dayOfWeek = 0, -- range: 1 to 7, starting from sunday
 	summerTime = nil -- true for summer time, otherwise winter time. Nil for UTC.
 }
 
@@ -19,7 +19,8 @@ local monthsToDaysCumulative = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304
 
 -- For Sakamoto's Algorithm (day of week)
 local sakamoto = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
-		
+local weekDaysUP = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"}
+
 local function idiv(n, d)
 	return math.floor(n/d)
 end
@@ -50,13 +51,6 @@ local function isYearsLeapSince(year)
 	return idiv(year, 4) - idiv(year, 100) + idiv(year, 400)
 end
 
-local function getDayOfWeek(year, month, day)
-	if month < 3 then
-		year = year - 1
-	end
-	return (year + isYearsLeapSince(year) + sakamoto[month] + day) % 7 + 1
-end
-
 local function carry (tens, units, base)
 	if units >= base then
 		tens  = tens + idiv (units , base)
@@ -65,15 +59,23 @@ local function carry (tens, units, base)
 	return tens , units
 end
 
+-- range: 1 to 7, starting from sunday
+local function getDayOfWeek(year, month, day)
+	if month < 3 then
+		year = year - 1
+	end
+	return (year + isYearsLeapSince(year) + sakamoto[month] + day) % 7 + 1
+end
+
 local function getYearOffset(ts)
 	local year, offset
-	
+
 	if ts >= 1577836800 then
 		year, offset = 2020, 1577836800 -- 1.1.2020
-	
+
 	elseif ts >= 1420070400 then
 		year, offset = 2015, 1420070400 -- 1.1.2015
-	
+
 	else
 		year, offset = 1970, 0
 	end
@@ -87,7 +89,7 @@ function df.setTime(ts)
 	local year, offset = getYearOffset(ts)
 	local month = 0
 	local day = 0
-	local hour = 0 
+	local hour = 0
 	local min = 0
 	local sec = ts - offset
 
@@ -96,10 +98,10 @@ function df.setTime(ts)
 	min, sec = carry(min, sec, 60)
 	hour, min = carry(hour, min, 60)
 	day, hour = carry(day, hour, 24)
-	
+
 	local rounds = 0
 	while true do
-	rounds = rounds + 1
+		rounds = rounds + 1
 		local monthLength = getMonthLength(month + 1 , year)
 		if day < monthLength then break end
 		day = day - monthLength
@@ -109,12 +111,16 @@ function df.setTime(ts)
 			year = year + 1
 		end
 	end
-	
+
 	df.year = year
 	df.month = month + 1
 	df.day = day + 1
-	df.hour = hour 
+	df.hour = hour
 	df.min = min
-	df.sec = sec
+	df.sec = sec	
 	df.dayOfWeek = getDayOfWeek(df.year, df.month, df.day)
+end
+
+function df.getDayOfWeekUp()
+	return weekDaysUP[df.dayOfWeek]
 end

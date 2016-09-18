@@ -1,4 +1,5 @@
 # Compiled Lua sources
+credentials.lua
 luac.out
 .settings
 

@@ -22,7 +22,7 @@ local function onTimerEvent()
 	nc.lastSync = nc.lastSync + 1
 	
 	if nc.lastSync == nc.syncPeriod then
-		pr.ntp:requestTime()
+		wlan.execute(function() pr.ntp:requestTime() end)
 	end	
 end
 
@@ -33,7 +33,7 @@ end
 -- syncPeriod - period in seconds to sync with NTP server. 24 hours if nil.
 -- timerId - timer id for tmr module. 1 if nil.
 function nc.start(ntpServer, syncPeriod, timerId)
-	assert(pr.ntp == nil, "NTP Clock already running")
+	assert(pr.ntp == nil)
 	
 	if timerId == nil then timerId = 1 end
 	if syncPeriod ~= nil then nc.syncPeriod = syncPeriod end
