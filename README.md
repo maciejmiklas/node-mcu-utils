@@ -115,7 +115,7 @@ Day of Week:    3
 RAM after printTime 30928
 ```
 
-# Ntp Clock (ntpClock.lua)
+# NTP Clock
 This script provides functionality to run a clock with precision of one second and to synchronize this clock every few hours with NTP server. 
 
 In the code below we first configure WiFi access. Once the WiFi access has been established it will call *ntpc.start()*. This function will start clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over this variable *ntpc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
@@ -318,8 +318,8 @@ Showers
 # weather date for tomorrow
 >YF2 date
 17 Sep 2016
-
 ```
+
 # Firmware
 Executing multiple scripts can lead to out of memory issues. One possibility to solve it is to build custom firmware containing only minimal set of node-mcu modules: cjson, file, gpio, net, node, tmr, uart, wifi. This blog provides detailed upgrade procedure: http://maciej-miklas.blogspot.de/2016/08/installing-nodemcu-v15-on-eps8266-esp.html
 
