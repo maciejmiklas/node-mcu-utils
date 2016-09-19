@@ -118,7 +118,7 @@ RAM after printTime 30928
 # NTP Clock
 This script provides functionality to run a clock with precision of one second and to synchronize this clock every few hours with NTP server. 
 
-In the code below we first configure WiFi access. Once the WiFi access has been established it will call *ntpc.start()*. This function will start clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over this variable *ntpc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
+In the code below we first configure WiFi access. Once the WiFi access has been established it will call *ntpc.start()*. This function will start clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over *ntpc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
 
 ```lua
 collectgarbage() print("RAM init", node.heap())
