@@ -27,7 +27,7 @@ DayOfWeek:  6
 heap after  39280
 ```
 
-# WiFi access
+# WiFi Access
 It's simple facade for connecting to WiFi. You have to provide connection credentials and function that will be executed after the connection has been established.
 
 *execute(...)* connects to WiFi and this can take some time. You can still call this method multiple times. In such case callbacks will be stored in the queue and executed after WiFi connection has been established.
