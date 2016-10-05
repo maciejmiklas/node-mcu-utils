@@ -2,9 +2,8 @@ NtpFactory = {}
 
 local ntp = {
 	responseCallback = nil,
-	lastTs = nil,
-	debug = false,
-	server = nil
+	server = nil,
+	status = {lastTs = nil, ip = nil}
 }
 
 local mt = {__index = ntp}
@@ -12,12 +11,6 @@ local cn
 
 function NtpFactory:fromDefaultServer()
 	return self:fromServer("pool.ntp.org")
-end
-
--- enables debug for all NTP instances
-function ntp:withDebug()
-	ntp.debug = true
-	return self
 end
 
 -- creates NTP instance from DNS server name
@@ -28,12 +21,10 @@ function NtpFactory:fromServer(server)
 	return obj
 end
 
-local function request(cn, ip)
-	if ip == nil then 
-		if ntp.debug then print("DNS error for NTP") end
-		return 
+function ntp:request(cn, ip)
+	if ip == nil then
+		return
 	end
-	if ntp.debug then print("NTP request IP:", ip) end
 	cn:connect(123, ip)
 	local request = string.char(0x1B) .. string.rep(0x0,47)
 	cn:send(request)
@@ -46,13 +37,11 @@ function ntp:response(cn, data)
 	local timezone = 1
 	local ntpstamp = ( highw * 65536 + loww ) + ( timezone * 3600) - 3600 -- seconds since 1.1.1900
 	local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
-	self.lastTs = ustamp
-	
-	if ntp.debug then print("NTP response:", self) end
-	
+	self.status.lastTs = ustamp
+
 	if self.responseCallback ~= nill then
 		self.responseCallback(ustamp)
-	end	
+	end
 end
 
 
@@ -63,16 +52,14 @@ function ntp:registerResponseCallback(responseCallback)
 end
 
 function ntp:requestTime()
-	if ntp.debug then print("NTP request:", self.server) end
-
 	cn = net.createConnection(net.UDP, 0)
-	cn:dns(self.server, request)
+	cn:dns(self.server, function(cn, ip) self:request(cn, ip) end)
 	cn:on("receive", function(cn, data) self:response(cn, data) end)
 end
 
 mt.__tostring = function(ntp)
 	if ntp.lastTs == nil then
-		return "NTP not requested"
+		return "..."
 	else
 		ustamp = ntp.lastTs
 		local hour = ustamp % 86400 / 3600

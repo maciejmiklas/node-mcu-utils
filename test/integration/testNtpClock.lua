@@ -6,8 +6,6 @@ require "wlan";
 
 collectgarbage() print("RAM after require", node.heap())
 
-ntpc.debug = true
-wlan.debug = true
 wlan.setup(cred.ssid, cred.password)
 
 wlan.execute(function() ntpc.start("pool.ntp.org", 3600) end)

@@ -1,7 +1,5 @@
 require "yahooWeather";
 
-sapiYaw = {debug = false}
-
 -- 1 if clock has been synched at least once, 0 otherwise 
 function scmd.YIE()
 	if yaw.weather == nil then

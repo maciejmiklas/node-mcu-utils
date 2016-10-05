@@ -5,7 +5,6 @@ ntpc = {
 	current = 0, -- Curent UTC time in seconds since 1.1.1970. 
 	lastSyncSec = -1, -- Seconds since last sync with NTP server
 	syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
-	debug = false,
 	timerId = 1
 }
 
@@ -38,7 +37,6 @@ function ntpc.start(ntpServer)
 		ntp = NtpFactory:fromDefaultServer()
 	end
 
-	if ntpc.debug then ntp:withDebug() end
 	ntp:registerResponseCallback(onNtpResponse)
 	wlan.execute(function() ntp:requestTime() end)
 	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, sync)

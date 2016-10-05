@@ -7,8 +7,6 @@ yaw = {
 	country = "de",
 	server = "query.yahooapis.com",
 	port = 80,
-	debug = false,
-	trace = false,
 	timerId = 2,
 	syncPeriodSec = 3600, -- sync weather every hour
 
@@ -61,14 +59,12 @@ local function extraactJson(body)
 	local jsonStart = string.find(body, "{", bodyStart)
 	local jsonEnd = findJsonEnd(body);
 	local jsonStr = string.sub(body, jsonStart, jsonEnd)
-	if yaw.debug then print("YAW Json:'"..jsonStr.."'") end
 	return jsonStr
 end
 
 local function onReceive(cn, body)
 	cn:close()
 	con = nil
-	if yaw.trace then print("YAW response:", body) end
 	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
 	lastSyncSec = tmr.time()
@@ -80,33 +76,21 @@ end
 local function onConnection(sck, c)
 	local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
 		"  HTTP/1.1\r\nHost: "..yaw.server.."\r\nAccept: */*\r\n\r\n"
-
-	if yaw.debug then print("YAW request:", get) end
-
 	sck:send(get)
 end
 
 local function onDNSResponse(con, ip)
 	if ip == nil then
-		if yaw.debug then print("DNS error for:", yaw.server) end
 		return
 	end
 	con:connect(yaw.port, ip)
 end
 
 local function requestWeather()
-	if yaw.debug then print("Weather request:", yaw.server) end
-
 	con = net.createConnection(net.TCP, 0)
 	con:on("receive", onReceive)
 	con:on("connection", onConnection)
 	con:dns(yaw.server, onDNSResponse)
-
-	if yaw.trace then
-		con:on("disconnection", function() print("YAW disconnection") end)
-		con:on("sent", function() print("YAW sent") end)
-		con:on("reconnection", function() print("YAW reconnection") end)
-	end
 end
 
 local function sync()

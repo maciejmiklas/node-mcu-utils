@@ -2,7 +2,7 @@ require "dateformatEurope";
 require "ntp";
 require "ntpClock";
 
-sapiClock = {utcOffset = 3600, debug = false}
+sapiClock = {utcOffset = 3600}
 
 -- read time is seconds since 1.1.1970
 function scmd.CTS()

@@ -6,8 +6,7 @@ require "dateformatEurope";
 
 collectgarbage() print("RAM after require", node.heap())
 
-ntp = NtpFactory:fromDefaultServer():withDebug()
-wlan.debug = true
+ntp = NtpFactory:fromDefaultServer()
 
 local function printTime(ts) 
 	collectgarbage() print("RAM before printTime", node.heap())
