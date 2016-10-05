@@ -13,7 +13,7 @@ local ntp
 
 local function onNtpResponse(ts)
 	ntpc.current = ts
-	ntpc.lastSyncSev = 0
+	ntpc.lastSyncSec = 0
 end
 
 local function sync()
