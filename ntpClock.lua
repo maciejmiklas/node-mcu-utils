@@ -17,6 +17,7 @@ local function onNtpResponse(ts)
 end
 
 local function sync()
+	if lastSyncSec== -1 then return end
 	ntpc.current = ntpc.current + 1
 	ntpc.lastSyncSec = ntpc.lastSyncSec + 1
 	
