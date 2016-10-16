@@ -97,7 +97,7 @@ end
 local function requestWeather()
 	if yaw.debug then print("Weather request:", yaw.server) end
 	
-	if con ~= nil then cn:close() end
+	if con ~= nil then con:close() end
 	con = net.createConnection(net.TCP, 0)
 	con:on("receive", onReceive)
 	con:on("connection", onConnection)
