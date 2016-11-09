@@ -4,52 +4,32 @@ require "ntpClock";
 
 sapiClock = {utcOffset = 3600}
 
--- read time is seconds since 1.1.1970
-function scmd.CTS()
-	uart.write(0, ntpc.current.."\n")
-end
-
--- seconds since last sync with NTP server
-function scmd.CLS()
-	uart.write(0, ntpc.lastSyncSec.."\n")
-end
-
--- 1 if clock has been synched at least once, 0 otherwise 
-function scmd.CIE()
-	if ntpc.lastSyncSec == -1 then
-		uart.write(0, "0\n")
-	else 	
-		uart.write(0, "1\n")
-	end
-end
-
--- return hours of local time in 24h format, e.g.: 23:11
-function scmd.CH2()
+-- return hours as local time in 24h format, range: 00-23
+function scmd.CHH()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
-	uart.write(0, string.format("%02u:%02u:%02d\n", df.hour, df.min, df.sec))
+	uart.write(0, string.format("%02u\n", df.hour))
 end
 
--- return date in format: yyyy-mm-dd
-function scmd.CDU()
+-- return minutes of actual minute as local time, range: 01 to 60
+function scmd.CMM()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
-	uart.write(0, string.format("%04u-%02u-%02u\n", df.year, df.month, df.day))
+	uart.write(0, string.format("%02u\n", df.min))
 end
 
--- return date and time (24h) in format: yyyy-mm-dd HHLmm:ss
-function scmd.CF1()
+-- return day of the month, range: 01-31
+function scmd.CDD()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
-	uart.write(0, string.format("%04u-%02u-%02u %02u:%02u:%02d\n",
-		df.year, df.month, df.day, df.hour, df.min, df.sec))
+	uart.write(0, string.format("%02u\n", df.day))
 end
 
--- return day of week as int, range: 1 to 7 starting from monday
-function scmd.CDI()
+-- return month, range: 01 to 12
+function scmd.CMM()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
-	uart.write(0, df.dayOfWeek.."\n")
+	uart.write(0, string.format("%02u\n", df.month))
 end
 
--- return day of week as 3 letter us text
-function scmd.CDU()
+-- return day of week as 3 letter US text in format 'DDD'
+function scmd.CD3()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
 	uart.write(0, df.getDayOfWeekUp().."\n")
 end

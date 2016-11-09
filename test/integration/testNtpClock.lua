@@ -1,5 +1,6 @@
 collectgarbage() print("RAM init", node.heap())
 
+require "credentials"
 require "dateformatEurope";
 require "ntpClock";
 require "wlan";
@@ -19,7 +20,8 @@ local function printTime()
 		df.year, df.month, df.day, df.hour, df.min, df.sec))
 	print("Summer Time:", df.summerTime)
 	print("Day of Week:", df.dayOfWeek)
+	print("Status:",tostring(wlan), tostring(ntpc))
 	print("\n")
 end
 
-tmr.alarm(2, 600000, tmr.ALARM_AUTO, printTime)
+tmr.alarm(2, 5000, tmr.ALARM_AUTO, printTime)

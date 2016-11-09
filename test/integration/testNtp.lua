@@ -1,10 +1,12 @@
 collectgarbage() print("RAM init", node.heap())
-
+require "credentials"
 require "wlan"
 require "ntp"
 require "dateformatEurope";
 
 collectgarbage() print("RAM after require", node.heap())
+
+wlan.setup(cred.ssid, cred.password)
 
 ntp = NtpFactory:fromDefaultServer()
 
@@ -23,7 +25,9 @@ end
 
 ntp:registerResponseCallback(printTime)
 
-wlan.execute("Maciej6s", "xxx", function() ntp:requestTime() end)
+wlan.execute(function() ntp:requestTime() end)
+
+tmr.alarm(2, 5000, tmr.ALARM_AUTO, function() print("NTP Status:", tostring(ntp), tostring(wlan)) end) 
 
 collectgarbage() print("RAM callbacks", node.heap())
  

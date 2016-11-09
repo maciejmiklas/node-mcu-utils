@@ -25,20 +25,10 @@ local function onData(data)
 	if status ~= true then uart.write(0, "ERR:"..err.."\n") end
 end
 
--- return wifi status
-function scmd.GWS()
-	uart.write(0, wifi.sta.status().."\n")
-end
-
--- return free ram
-function scmd.GFR()
-	uart.write(0, node.heap().."\n")
-end
-
 function sapi.start()
 	gpio.mode(sapi.pin, gpio.OUTPUT)
 	
-	-- configure for 9600, 8N1, no echo
+	-- configure for 115200, 8N1, no echo
 	uart.setup(0, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1, 0)
 	uart.on("data", '\n', onData , 0)
 end

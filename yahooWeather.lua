@@ -26,11 +26,13 @@ yaw = {
 	responseCallback = nil
 }
 local con
-local lastSyncSec = 0 -- time in milis of last sync with yahoo server
 
-function yaw.getLastSyncSec()
-	return (tmr.time() - lastSyncSec)
-end
+local stats = {
+	yahooReqTime = -1,-- time in sec of last response from DNS server and request to yahoo
+	yahooRespTime = -1, -- time in sec of last response from yahoo
+	dnsReqTime = -1, -- time in sec of last request to DNS server,
+	ip = 0 -- ip of yahoo server
+}
 
 local function parseWeather(jsonStr)
 	local json = cjson.decode(jsonStr)
@@ -63,14 +65,14 @@ local function extraactJson(body)
 end
 
 local function onReceive(cn, body)
+	stats.yahooRespTime = tmr.time()
 	cn:close()
 	con = nil
 	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
-	lastSyncSec = tmr.time()
 	if yaw.responseCallback ~= nil then
 		yaw.responseCallback()
-	end		
+	end
 end
 
 local function onConnection(sck, c)
@@ -81,23 +83,37 @@ end
 
 local function onDNSResponse(con, ip)
 	if ip == nil then
+		stats.ip = 0;
 		return
 	end
+	stats.ip = ip;
+	stats.yahooReqTime = tmr.time()
 	con:connect(yaw.port, ip)
 end
 
 local function requestWeather()
+	if con ~= nil then con:close() end
+
 	con = net.createConnection(net.TCP, 0)
 	con:on("receive", onReceive)
 	con:on("connection", onConnection)
+	stats.dnsReqTime = tmr.time()
 	con:dns(yaw.server, onDNSResponse)
 end
 
-local function sync()
+local function onTimer()
 	wlan.execute(requestWeather)
 end
 
 function yaw.start()
-	sync()
-	tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, sync)
+	onTimer()
+	tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
 end
+
+local mt = {}
+
+mt.__tostring = function(yaw)
+	return string.format("YAW->%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", stats.ip, stats.dnsReqTime, stats.yahooReqTime, stats.yahooRespTime)
+end
+
+setmetatable(yaw, mt)

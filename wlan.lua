@@ -2,7 +2,7 @@ wlan = {ssid="SSID not set", timerId = 0}
 
 local timerBusy = false
 local callbacks = {}
-
+local stats = {callbackError = 0}
 function wlan.setup(ssid, password)
 	wlan.ssid = ssid
 	wlan.password = password
@@ -12,18 +12,19 @@ function wlan.setup(ssid, password)
 end
 
 -- this method can be executed multiple times. It will queue all callbacks untill it gets
--- WiFi connection 
-function wlan.execute(callback)	
+-- WiFi connection
+function wlan.execute(callback)
 	if wifi.sta.status() == 5 and wifi.sta.getip() ~= nil then
-		callback()
+		local _, err = pcall(callback)
+		if err ~= nil then stats.callbackError = err end		
 		return
 	end
-	
+
 	table.insert(callbacks, callback)
 	if timerBusy then
 		return
 	end
-	timerBusy = true	
+	timerBusy = true
 
 	wifi.sta.connect()
 
@@ -35,9 +36,18 @@ function wlan.execute(callback)
 			timerBusy = false
 			local clb = table.remove(callbacks)
 			while clb ~= nil do
-				local status, err = pcall(clb)
+				local _, err = pcall(clb)
+				if err ~= nil then stats.callbackError = err end
 				clb = table.remove(callbacks)
 			end
 		end
 	end)
 end
+
+local mt = {}
+
+mt.__tostring = function(wl)
+	return string.format("WiFi->%s,ST:%u,ERR:%s", tostring(wifi.sta.getip()), wifi.sta.status(), stats.callbackError)
+end
+
+setmetatable(wlan, mt)

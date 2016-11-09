@@ -19,7 +19,7 @@ local monthsToDaysCumulative = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304
 
 -- For Sakamoto's Algorithm (day of week)
 local sakamoto = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
-local weekDaysUP = {"SUN", "MON", "TUE", "WWD", "THU", "FRI", "SAT"}
+local weekDaysUP = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"}
 
 local function idiv(n, d)
 	return math.floor(n/d)
