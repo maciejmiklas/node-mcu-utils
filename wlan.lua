@@ -16,7 +16,7 @@ end
 function wlan.execute(callback)
 	if wifi.sta.status() == 5 and wifi.sta.getip() ~= nil then
 		local _, err = pcall(callback)
-		if err ~= nil then stats.callbackError = err end		
+		if err ~= nil then stats.callbackError = err end				
 		return
 	end
 

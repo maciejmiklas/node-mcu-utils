@@ -3,7 +3,7 @@ require "ntp"
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 ntpc = {
 	current = 0, -- Curent UTC time in seconds since 1.1.1970.
-	lastSyncTime = -1, -- Seconds since last sync with NTP server
+	lastSyncSec = -1, -- Seconds since last sync with NTP server
 	syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
 	timerId = 1
 }
@@ -12,17 +12,17 @@ local ntp
 
 local function onNtpResponse(ts)
 	ntpc.current = ts
-	ntpc.lastSyncTime = 0
+	ntpc.lastSyncSec = 0
 end
 
 local function onTimer()
 	ntpc.current = ntpc.current + 1
-	if ntpc.lastSyncTime >= 0 then
-		ntpc.lastSyncTime = ntpc.lastSyncTime + 1
+	if ntpc.lastSyncSec >= 0 then
+		ntpc.lastSyncSec = ntpc.lastSyncSec + 1
 	end
 	
-	if ntpc.lastSyncTime == ntpc.syncPeriodSec then
-		wlan.execute(function() ntpc.lastSyncTime = -1 ntp:requestTime() end)
+	if ntpc.lastSyncSec == ntpc.syncPeriodSec then
+		wlan.execute(function() ntpc.lastSyncSec = -1 ntp:requestTime() end)
 	end
 end
 
@@ -47,7 +47,7 @@ end
 local mt = {}
 
 mt.__tostring = function(ntpc)
-	return string.format("NTPC->%d,%s", ntpc.lastSyncTime, tostring(ntp))
+	return string.format("NTPC->%d,%s", ntpc.lastSyncSec, tostring(ntp))
 end
 
 setmetatable(ntpc, mt)
