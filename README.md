@@ -270,7 +270,8 @@ local gtsCall = 0;
 -- return status for all modules.
 function scmd.GST()
     gtsCall = gtsCall + 1;
-    uart.write(0, string.format("NOW:%u;CNT:%u;RAM:%u;%s;%s;%s", tmr.time(), gtsCall, node.heap(), tostring(wlan), tostring(ntpc), tostring(yaw)))
+    uart.write(0, string.format("NOW:%u;CNT:%u;RAM:%u;%s;%s;%s", tmr.time(),
+        gtsCall, node.heap(), tostring(wlan), tostring(ntpc), tostring(yaw)))
 end
 
 -- setup wlan required by NTP clokc
@@ -294,7 +295,9 @@ Here are few Serial API commands and their responses.
 
 # function from script above
 GST
-NOW:30;CNT:1;RAM:12264;WiFi->172.20.10.6,ST:5,ERR:0;NTPC->18,NTP->07:08:03,129.70.132.35,DNS_RQ:12,NTP_RQ:12,NTP_RS:12;YAW->76.13.28.196,DNS_RQ:12,Y_RQ:13,Y_RS:13
+NOW:30;CNT:1;RAM:12264;WiFi->172.20.10.6,ST:5,ERR:0;NTPC->18,NTP->
+07:08:03,129.70.132.35,DNS_RQ:12,NTP_RQ:12,NTP_RS:12;YAW->
+76.13.28.196,DNS_RQ:12,Y_RQ:13,Y_RS:13
 
 # hour of the day
 CHH
