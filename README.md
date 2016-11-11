@@ -69,7 +69,8 @@ tmr.alarm(2, 5000, tmr.ALARM_AUTO, function() print("Wlan Status:", tostring(wla
 ```bash
 Wlan Status:  WiFi->nil,ST:1,ERR:0
 Wlan Status on connect: WiFi->172.20.10.6,ST:5,ERR:0
-Wlan Status:    WiFi->172.20.10.6,ST:5,ERR:testWlanError.lua:5: attempt to index global 'abc' (a nil value)
+Wlan Status:    WiFi->172.20.10.6,ST:5,ERR:testWlanError.lua:5: attempt to 
+index global 'abc' (a nil value)
 ```
 
 # NTP Time (ntp.lua)
