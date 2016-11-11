@@ -7,8 +7,6 @@ yaw = {
 	country = "de",
 	server = "query.yahooapis.com",
 	port = 80,
-	debug = false,
-	trace = false,
 	timerId = 2,
 	syncPeriodSec = 3600, -- sync weather every hour
 
@@ -28,11 +26,13 @@ yaw = {
 	responseCallback = nil
 }
 local con
-local lastSyncSec = 0 -- time in milis of last sync with yahoo server
 
-function yaw.getLastSyncSec()
-	return (tmr.time() - lastSyncSec)
-end
+local stats = {
+	yahooReqTime = -1,-- time in sec of last response from DNS server and request to yahoo
+	yahooRespTime = -1, -- time in sec of last response from yahoo
+	dnsReqTime = -1, -- time in sec of last request to DNS server,
+	ip = 0 -- ip of yahoo server
+}
 
 local function parseWeather(jsonStr)
 	local json = cjson.decode(jsonStr)
@@ -61,60 +61,63 @@ local function extraactJson(body)
 	local jsonStart = string.find(body, "{", bodyStart)
 	local jsonEnd = findJsonEnd(body);
 	local jsonStr = string.sub(body, jsonStart, jsonEnd)
-	if yaw.debug then print("YAW Json:'"..jsonStr.."'") end
 	return jsonStr
 end
 
 local function onReceive(cn, body)
+	stats.yahooRespTime = tmr.time()
 	cn:close()
 	con = nil
-	if yaw.trace then print("YAW response:", body) end
 	local jsonStr = extraactJson(body)
 	yaw.weather = parseWeather(jsonStr)
-	lastSyncSec = tmr.time()
 	if yaw.responseCallback ~= nil then
 		yaw.responseCallback()
-	end		
+	end
 end
 
 local function onConnection(sck, c)
 	local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
 		"  HTTP/1.1\r\nHost: "..yaw.server.."\r\nAccept: */*\r\n\r\n"
-
-	if yaw.debug then print("YAW request:", get) end
-
 	sck:send(get)
 end
 
 local function onDNSResponse(con, ip)
 	if ip == nil then
-		if yaw.debug then print("DNS error for:", yaw.server) end
+		stats.ip = 0;
 		return
 	end
+	stats.ip = ip;
+	stats.yahooReqTime = tmr.time()
 	con:connect(yaw.port, ip)
 end
 
 local function requestWeather()
-	if yaw.debug then print("Weather request:", yaw.server) end
-	
 	if con ~= nil then con:close() end
+
 	con = net.createConnection(net.TCP, 0)
 	con:on("receive", onReceive)
 	con:on("connection", onConnection)
+	stats.dnsReqTime = tmr.time()
 	con:dns(yaw.server, onDNSResponse)
-
-	if yaw.trace then
-		con:on("disconnection", function() print("YAW disconnection") end)
-		con:on("sent", function() print("YAW sent") end)
-		con:on("reconnection", function() print("YAW reconnection") end)
-	end
 end
 
-local function sync()
+local function onTimer()
 	wlan.execute(requestWeather)
 end
 
 function yaw.start()
-	sync()
-	tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, sync)
+	onTimer()
+	tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
 end
+
+local mt = {}
+
+mt.__tostring = function(yaw)
+	local lastSyncSec = -1
+	if stats.yahooRespTime > 0 then
+		lastSyncSec = tmr.time() - stats.yahooRespTime
+	end
+	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", lastSyncSec, stats.ip, stats.dnsReqTime, stats.yahooReqTime, stats.yahooRespTime)
+end
+
+setmetatable(yaw, mt)

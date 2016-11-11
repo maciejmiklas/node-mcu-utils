@@ -21,7 +21,7 @@ local function isSummerTimeAmerica(df)
 		return previousSunday <= 0
 	end
 
-	assert(false, "Error in isSummerTimeAmerica")
+	assert(false)
 end
 
 -- initializes "df" table with USA time with daylight saving
