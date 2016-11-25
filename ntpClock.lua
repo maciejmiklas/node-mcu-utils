@@ -3,26 +3,35 @@ require "ntp"
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 ntpc = {
 	current = 0, -- Curent UTC time in seconds since 1.1.1970.
-	lastSyncSec = -1, -- Seconds since last sync with NTP server
 	syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
 	timerId = 1
 }
 
 local ntp
+local lastReqSec = 0 -- Seconds since last sync request to NTP server
+local stats = {
+	ntpReqTime = -1,
+	ntpRespTime = -1
+}
 
 local function onNtpResponse(ts)
 	ntpc.current = ts
-	ntpc.lastSyncSec = 0
+	stats.ntpRespTime = tmr.time()
 end
 
+local function execNtpRequest()
+	stats.ntpReqTime = tmr.time()
+	lastReqSec = 0
+	ntp:requestTime()
+end
+
+-- timer must run every second, because we use it to drive clock.
 local function onTimer()
 	ntpc.current = ntpc.current + 1
-	if ntpc.lastSyncSec >= 0 then
-		ntpc.lastSyncSec = ntpc.lastSyncSec + 1
-	end
+	lastReqSec = lastReqSec + 1
 	
-	if ntpc.lastSyncSec == ntpc.syncPeriodSec then
-		wlan.execute(function() ntpc.lastSyncSec = -1 ntp:requestTime() end)
+	if lastReqSec == ntpc.syncPeriodSec then
+		wlan.execute(execNtpRequest)
 	end
 end
 
@@ -40,14 +49,20 @@ function ntpc.start(ntpServer)
 	end
 
 	ntp:registerResponseCallback(onNtpResponse)
-	wlan.execute(function() ntp:requestTime() end)
+	wlan.execute(execNtpRequest)
+	
+	-- timer must run every second, because we use it to drive clock.
 	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, onTimer)
 end
 
 local mt = {}
 
 mt.__tostring = function(ntpc)
-	return string.format("NTPC->%d,%s", ntpc.lastSyncSec, tostring(ntp))
+	local lastSyncSec = -1
+	if stats.ntpRespTime ~= -1 then
+		lastSyncSec = tmr.time() - stats.ntpRespTime
+	end
+	return string.format("NTPC->%d,N_RQ:%d,N_RS:%d,%s", lastSyncSec, stats.ntpReqTime, stats.ntpRespTime, tostring(ntp))
 end
 
 setmetatable(ntpc, mt)
