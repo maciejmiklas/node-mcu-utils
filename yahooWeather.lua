@@ -112,12 +112,16 @@ end
 
 local mt = {}
 
-mt.__tostring = function(yaw)
+function yaw.lastSyncSec()
 	local lastSyncSec = -1
 	if stats.yahooRespTime ~= -1 then
 		lastSyncSec = tmr.time() - stats.yahooRespTime
 	end
-	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", lastSyncSec, stats.ip, stats.dnsReqTime, stats.yahooReqTime, stats.yahooRespTime)
+	return lastSyncSec;
+end
+
+mt.__tostring = function(yaw)
+	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", yaw.lastSyncSec(), stats.ip, stats.dnsReqTime, stats.yahooReqTime, stats.yahooRespTime)
 end
 
 setmetatable(yaw, mt)

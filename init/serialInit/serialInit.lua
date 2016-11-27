@@ -4,10 +4,8 @@ require "serialAPIClock"
 require "serialAPIYahooWeather"
 require "yahooWeather"
 
-ntpc.syncPeriodSec = 120
-yaw.syncPeriodSec = 180
---ntpc.syncPeriodSec = 900 -- 15 min
---yaw.syncPeriodSec = 1020 -- 17 min
+ntpc.syncPeriodSec = 3600
+yaw.syncPeriodSec = 3600
 
 local gtsCall = 0;
 
@@ -15,6 +13,12 @@ local gtsCall = 0;
 function scmd.GST()
 	gtsCall = gtsCall + 1;
 	uart.write(0, string.format("NOW:%u;CNT:%u;RAM:%u;%s;%s;%s", tmr.time(), gtsCall, node.heap(), tostring(wlan), tostring(ntpc), tostring(yaw)))
+end
+
+-- return short status for all modules.
+function scmd.GSS()
+	gtsCall = gtsCall + 1;
+	uart.write(0, string.format("CNT:%u;RAM:%u;C:%d;Y:%d", gtsCall, node.heap(), ntpc.lastSyncSec(), yaw.lastSyncSec()))
 end
 
 -- setup wlan required by NTP clokc

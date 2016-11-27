@@ -11,7 +11,7 @@ function scmd.CHH()
 end
 
 -- return minutes of actual minute as local time, range: 01 to 60
-function scmd.CMM()
+function scmd.CMI()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
 	uart.write(0, string.format("%02u\n", df.min))
 end

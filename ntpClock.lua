@@ -55,14 +55,18 @@ function ntpc.start(ntpServer)
 	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, onTimer)
 end
 
-local mt = {}
-
-mt.__tostring = function(ntpc)
+function ntpc.lastSyncSec() 
 	local lastSyncSec = -1
 	if stats.ntpRespTime ~= -1 then
 		lastSyncSec = tmr.time() - stats.ntpRespTime
 	end
-	return string.format("NTPC->%d,N_RQ:%d,N_RS:%d,%s", lastSyncSec, stats.ntpReqTime, stats.ntpRespTime, tostring(ntp))
+	return lastSyncSec;
+end
+
+local mt = {}
+
+mt.__tostring = function(ntpc)
+	return string.format("NTPC->%d,N_RQ:%d,N_RS:%d,%s", ntpc.lastSyncSec(), stats.ntpReqTime, stats.ntpRespTime, tostring(ntp))
 end
 
 setmetatable(ntpc, mt)
