@@ -31,6 +31,7 @@ function scmd.YF3(param)
 	uart.write(0, yaw.weather[3][param].."\n")
 end
 
+-- https://developer.yahoo.com/weather/documentation.html#codes
 local function mapCode(codeStr)
 	local code = tonumber(codeStr)
 	
@@ -45,12 +46,12 @@ local function mapCode(codeStr)
 		mapped = 1
 
 	-- ICON_IDX_RAIN
-	elseif code == 9 or code == 11 or code == 12 or code == 17  or code == 35 or code == 19 or code == 39 or 
-			code == 5 or code == 6 or code == 7 or code == 8  or code == 10 or code == 18 then		
+	elseif code == 9 or code == 11 or code == 12 or code == 17  or code == 35 or code == 19 or 
+			code == 5 or code == 6 or code == 7 or code == 8 or code == 10 or code == 18 then		
 		mapped = 2
 		
 	-- ICON_IDX_THUNDERSTORM
-	elseif code == 0 or code == 1 or code == 2 or code == 3 or code == 4 or code == 45 then
+	elseif code == 0 or code == 1 or code == 2 or code == 3 or code == 4 or code == 45 or code == 39 then
 		mapped = 3
 		
 	-- ICON_IDX_MIX_SUN_THUNDERSTORM		
