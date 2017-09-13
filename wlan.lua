@@ -3,6 +3,7 @@ wlan = {ssid="SSID not set", timerId = 0}
 local timerBusy = false
 local callbacks = {}
 local stats = {callbackError = 0}
+
 function wlan.setup(ssid, password)
 	wlan.ssid = ssid
 	wlan.password = password
@@ -44,6 +45,7 @@ function wlan.execute(callback)
 	end)
 end
 
+--[[
 local mt = {}
 
 mt.__tostring = function(wl)
@@ -51,3 +53,4 @@ mt.__tostring = function(wl)
 end
 
 setmetatable(wlan, mt)
+--]]

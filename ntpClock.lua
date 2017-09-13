@@ -1,4 +1,5 @@
 require "ntp"
+require "wlan";
 
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 ntpc = {
@@ -63,10 +64,10 @@ function ntpc.lastSyncSec()
 	return lastSyncSec;
 end
 
+--[[
 local mt = {}
-
 mt.__tostring = function(ntpc)
 	return string.format("NTPC->%d,N_RQ:%d,N_RS:%d,%s", ntpc.lastSyncSec(), stats.ntpReqTime, stats.ntpRespTime, tostring(ntp))
 end
-
 setmetatable(ntpc, mt)
+--]]

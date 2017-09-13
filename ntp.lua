@@ -63,6 +63,7 @@ function ntp:requestTime()
 	cn:dns(self.server, function(cn, ip) self:request(cn, ip) end)
 end
 
+--[[
 mt.__tostring = function(ntp)
 	local ustamp = ntp.status.lastTs
 	local hour = ustamp % 86400 / 3600
@@ -71,3 +72,4 @@ mt.__tostring = function(ntp)
 	return string.format("NTP->%02u:%02u:%02u,%s,DNS_RQ:%d,NTP_RQ:%d,NTP_RS:%d", 
 		hour, minute, second, ntp.status.ip, ntp.status.dnsReqTime, ntp.status.ntpReqTime, ntp.status.ntpRespTime)
 end
+--]]

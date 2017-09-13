@@ -1,5 +1,3 @@
-require "wlan";
-
 sapi = {pin = 4, baud = 115200}
 scmd = {}
 
