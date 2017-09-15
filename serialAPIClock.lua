@@ -31,5 +31,5 @@ end
 -- return day of week as 3 letter US text in format 'DDD'
 function scmd.CD3()
 	df.setEuropeTime(ntpc.current, sapiClock.utcOffset)
-	uart.write(0, df.getDayOfWeekUp().."\n")
+	uart.write(0, df.getDayOfWeekUp()..'\n')
 end

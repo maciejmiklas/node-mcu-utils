@@ -8,27 +8,34 @@ local function ready()
 	return false
 end
 
+function scmd.YCW(param)
+  if ready() == false then
+    return
+  end
+  uart.write(0, yaw.weather[0][param]..'\n')
+end
+
 -- "scmd.YFx" returns forecast for given param, where x is day: 1 - today, 2 - tommorow, and so on. 
 -- Possible params can be found at: yahooWeather.lua -> yaw.weather
 function scmd.YF1(param)
 	if ready() == false then
 		return
 	end
-	uart.write(0, yaw.weather[1][param].."\n")
+	uart.write(0, yaw.weather[1][param]..'\n')
 end
 
 function scmd.YF2(param)
 	if ready() == false then
 		return
 	end
-	uart.write(0, yaw.weather[2][param].."\n")
+	uart.write(0, yaw.weather[2][param]..'\n')
 end
 
 function scmd.YF3(param)
 	if ready() == false then
 		return
 	end
-	uart.write(0, yaw.weather[3][param].."\n")
+	uart.write(0, yaw.weather[3][param]..'\n')
 end
 
 -- https://developer.yahoo.com/weather/documentation.html#codes
@@ -89,5 +96,5 @@ function scmd.YWC(dayStr)
 		return
 	end
 	local day = tonumber(dayStr)
-	uart.write(0, mapCode(yaw.weather[day].code).."\n")
+	uart.write(0, mapCode(yaw.weather[day].code)..'\n')
 end

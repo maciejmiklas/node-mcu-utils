@@ -3,8 +3,8 @@ require "serialAPI"
 require "serialAPIClock"
 require "serialAPIYahooWeather"
 
-ntpc.syncPeriodSec = 3600
-yaw.syncPeriodSec = 3600
+ntpc.syncPeriodSec = 7200 -- 2 hours
+yaw.syncPeriodSec = 720 -- 15 minutes
 
 local gtsCall = 0;
 

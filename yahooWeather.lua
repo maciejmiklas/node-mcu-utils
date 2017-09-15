@@ -1,7 +1,7 @@
 -- http://query.yahooapis.com/v1/public/yql?q=select%20item.forecast%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22munic%2C%20de%22)%20and%20u%3D%27c%27%20limit%203&format=json
 require "wlan";
 yaw = {
-  url1 = "GET /v1/public/yql?q=select%20item.forecast%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22",
+  url1 = "GET /v1/public/yql?q=select%20item.forecast,item.condition%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22",
   url2 = "%2C%20",
   url3 = "%22)%20and%20u%3D%27c%27%20limit%203&format=json",
   city = "wroclaw",
@@ -33,7 +33,7 @@ local stats = {
   yahooReqTime = -1,-- time in sec of last response from DNS server and request to yahoo
   yahooRespTime = -1, -- time in sec of last response from yahoo
   dnsReqTime = -1, -- time in sec of last request to DNS server
-  yahooRespErrCnt = -1,
+  yahooRespErrCnt = 0,
   ip = 0 -- ip of yahoo server
 }
 
@@ -41,11 +41,15 @@ local function parseWeather(jsonStr)
   local json = cjson.decode(jsonStr)
   local weather = {}
   local day = 1
-  for k,v in pairs(json.query.results.channel) do
-    for _,forecast in pairs(v.item) do
-      weather[day] = forecast;
+  local j_channel = json.query.results.channel
+  
+  weather[0] = j_channel[1].item.condition
+  
+  for _,chel in pairs(j_channel) do
+    for _,item in pairs(chel) do
+      weather[day] = item.forecast;
       day = day + 1
-    end
+     end
   end
   return weather;
 end
@@ -68,11 +72,8 @@ local function respErr()
 end
 
 local function extraactJsonStart(body)
-  local bodyStart = string.find(body, "\n\r", 1)
-  if bodyStart == nil then return respErr() end
-
-  local jsonStart = string.find(body, "{", bodyStart)
-  if jsonStart == nil then return respErr() end
+  local jsonStart = string.find(body, "{", 1)
+  if jsonStart == nil then return null end
 
   local jsonEnd = findJsonEnd(body);
   local jsonStr = string.sub(body, jsonStart, jsonEnd)
@@ -86,6 +87,7 @@ local function close(cn)
 end
 
 local function processWeatherJson(jsonStr)
+uart.write(0, "PW: "..jsonStr)
   yaw.weather = parseWeather(jsonStr)
   if yaw.responseCallback ~= nil then
     yaw.responseCallback()
@@ -99,10 +101,9 @@ local function onReceive(cn, body)
   if buf == nil then
     local jsonStr, jsonEnd = extraactJsonStart(body)
     if jsonStr == nil then
-      close(cn)
       return
     end
-
+    
     -- weather has been received in first TPC frame
     if jsonEnd ~= -1 then
       close(cn)

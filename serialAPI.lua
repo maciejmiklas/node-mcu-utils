@@ -20,7 +20,7 @@ local function onData(data)
 		status, err = pcall(scmd[cmd], param)
 	end
 	
-	if status ~= true then uart.write(0, "ERR:"..err.."\n") end
+	if status ~= true then uart.write(0, "ERR:"..err..'\n') end
 end
 
 function sapi.start()
