@@ -27,13 +27,12 @@ yaw = {
   responseCallback = nil
 }
 local con
-local buf = ""
+local buf
 
 local stats = {
   yahooReqTime = -1,-- time in sec of last response from DNS server and request to yahoo
   yahooRespTime = -1, -- time in sec of last response from yahoo
   dnsReqTime = -1, -- time in sec of last request to DNS server
-  yahooRespErrCnt = 0,
   ip = 0 -- ip of yahoo server
 }
 
@@ -42,14 +41,14 @@ local function parseWeather(jsonStr)
   local weather = {}
   local day = 1
   local j_channel = json.query.results.channel
-  
+
   weather[0] = j_channel[1].item.condition
-  
+
   for _,chel in pairs(j_channel) do
     for _,item in pairs(chel) do
       weather[day] = item.forecast;
       day = day + 1
-     end
+    end
   end
   return weather;
 end
@@ -57,18 +56,13 @@ end
 local function findJsonEnd(body)
   local len = string.len(body)
   local sb = string.byte('}')
-  
+
   -- search for } from end of body, but reduce it to 100 steps
   local steps = len - 100;
   for idx = len, steps, -1 do
-    if body:byte(idx) == sb then return idx end    
+    if body:byte(idx) == sb then return idx end
   end
   return -1
-end
-
-local function respErr()
-  stats.yahooRespErrCnt = stats.yahooRespErrCnt +1
-  return nil
 end
 
 local function extraactJsonStart(body)
@@ -80,19 +74,18 @@ local function extraactJsonStart(body)
   return jsonStr, jsonEnd
 end
 
-local function close(cn)
-    cn:close()
-    con = nil
-    buf = nil
+local function close()
+  if con ~= nil then con:close() end
+  con = nil
+  buf = nil
 end
 
 local function processWeatherJson(jsonStr)
-uart.write(0, "PW: "..jsonStr)
   yaw.weather = parseWeather(jsonStr)
   if yaw.responseCallback ~= nil then
     yaw.responseCallback()
   end
-end 
+end
 
 local function onReceive(cn, body)
   stats.yahooRespTime = tmr.time()
@@ -103,10 +96,10 @@ local function onReceive(cn, body)
     if jsonStr == nil then
       return
     end
-    
+
     -- weather has been received in first TPC frame
     if jsonEnd ~= -1 then
-      close(cn)
+      close()
       processWeatherJson(jsonStr)
     else
       buf = jsonStr;
@@ -118,14 +111,13 @@ local function onReceive(cn, body)
     else
       local jsonEndStr = string.sub(body, 1, jsonEnd)
       local jsonStr = buf .. jsonEndStr;
-      close(cn)
+      close()
       processWeatherJson(jsonStr)
     end
   end
 end
 
 local function onConnection(sck, c)
-  buf = nil
   local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
     "  HTTP/1.1\r\nHost: "..yaw.server.."\r\nAccept: */*\r\n\r\n"
   sck:send(get)
@@ -142,8 +134,7 @@ local function onDNSResponse(con, ip)
 end
 
 local function requestWeather()
-  if con ~= nil then con:close() end
-
+  close()
   con = net.createConnection(net.TCP, 0)
   con:on("receive", onReceive)
   con:on("connection", onConnection)
@@ -160,10 +151,6 @@ function yaw.start()
   tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
 end
 
-function yaw.respErrCnt()
-  return stats.yahooRespErrCnt
-end
-
 function yaw.lastSyncSec()
   local lastSyncSec = -1
   if stats.yahooRespTime ~= -1 then
@@ -172,11 +159,21 @@ function yaw.lastSyncSec()
   return lastSyncSec;
 end
 
+
+
+
 --[[
+
 local mt = {}
+
 mt.__tostring = function(yaw)
-	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d,Y_RE:%d", yaw.lastSyncSec(), stats.ip, stats.dnsReqTime, 
-	   stats.yahooReqTime, stats.yahooRespTime, stats.yahooRespErrCnt)
+
+	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", yaw.lastSyncSec(), stats.ip, stats.dnsReqTime, 
+
+	   stats.yahooReqTime, stats.yahooRespTime)
+
 end
+
 setmetatable(yaw, mt)
+
 --]]
