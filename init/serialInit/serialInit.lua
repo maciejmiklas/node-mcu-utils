@@ -3,10 +3,11 @@ require "serialAPI"
 require "serialAPIClock"
 require "serialAPIYahooWeather"
 
-ntpc.syncPeriodSec = 36000 -- 0 hours
+ntpc.syncPeriodSec = 36000 -- 10 hours
 yaw.syncPeriodSec = 1800 -- 30 minutes
 
 local gtsCall = 0;
+local syncMarginSec = 120
 
 -- return status for all modules.
 --function scmd.GST()
@@ -15,18 +16,41 @@ local gtsCall = 0;
 --	 tostring(wlan), tostring(ntpc), tostring(yaw)))
 --end
 
+local function getNtpcStat() 
+  local ntpcStat = ''
+  if ntpc.lastSyncSec() == -1 then
+    ntpcStat = "C:?"  
+  elseif ntpc.lastSyncSec() - syncMarginSec > ntpc.syncPeriodSec then 
+    ntpcStat = "C:"..(ntpc.lastSyncSec() - ntpc.syncPeriodSec)
+  end
+  return ntpcStat;
+end
+
+local function getYawStat() 
+  local yawStat = ''
+  if yaw.lastSyncSec() == -1 then
+    yawStat = "Y:?"  
+  elseif yaw.lastSyncSec() - syncMarginSec > yaw.syncPeriodSec then 
+    yawStat = "Y:"..(yaw.lastSyncSec() - yaw.syncPeriodSec)
+  end
+  return yawStat;
+end
+
 -- return short status for all modules.
 function scmd.GSS()
   gtsCall = gtsCall + 1;
 
-  local sntpc = ':'
-  if ntpc.lastSyncSec() > ntpc.syncPeriodSec then sntpc = '?' end
+  local ntpcStat = getNtpcStat()
+  local yawStat = getYawStat()
+  
+  local status
+  if ntpcStat ~= '' or yawStat ~= '' then
+    status = string.format("CNT:%u RAM:%u %s %s", gtsCall, node.heap(), ntpcStat, yawStat)
+  else
+    status = "OK"
+  end
 
-  local syaw = ':'
-  if yaw.lastSyncSec() > yaw.syncPeriodSec then syaw = '?' end
-
-  uart.write(0, string.format("CNT:%u;RAM:%u;C%s%d;Y%s%d", gtsCall, node.heap(), sntpc, ntpc.lastSyncSec(),
-    syaw, yaw.lastSyncSec()))
+  uart.write(0, status)
 end
 
 -- network connect
