@@ -142,7 +142,7 @@ local function requestWeather()
   con:dns(yaw.server, onDNSResponse)
 end
 
-local function onTimer()
+local function onTimer()  
   wlan.execute(requestWeather)
 end
 
@@ -159,21 +159,11 @@ function yaw.lastSyncSec()
   return lastSyncSec;
 end
 
-
-
-
 --[[
-
 local mt = {}
-
 mt.__tostring = function(yaw)
-
 	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", yaw.lastSyncSec(), stats.ip, stats.dnsReqTime, 
-
 	   stats.yahooReqTime, stats.yahooRespTime)
-
 end
-
 setmetatable(yaw, mt)
-
 --]]

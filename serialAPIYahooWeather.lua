@@ -4,11 +4,19 @@ local function ready()
 	if yaw.weather ~= nil then
 		return true
 	end
-	uart.write(0, "XX\n")
+	uart.write(0, "ER\n")
 	return false
 end
 
-function scmd.YCW(param)
+function scmd.WST()
+  if yaw.weather ~= nil then
+    uart.write(0, "OK\n")
+  else
+    uart.write(0, "ER\n")  
+  end  
+end
+
+function scmd.WCW(param)
   if ready() == false then
     return
   end
@@ -17,25 +25,34 @@ end
 
 -- "scmd.YFx" returns forecast for given param, where x is day: 1 - today, 2 - tommorow, and so on. 
 -- Possible params can be found at: yahooWeather.lua -> yaw.weather
-function scmd.YF1(param)
+function scmd.WF1(param)
 	if ready() == false then
 		return
 	end
 	uart.write(0, yaw.weather[1][param]..'\n')
 end
 
-function scmd.YF2(param)
+function scmd.WF2(param)
 	if ready() == false then
 		return
 	end
 	uart.write(0, yaw.weather[2][param]..'\n')
 end
 
-function scmd.YF3(param)
+function scmd.WF3(param)
 	if ready() == false then
 		return
 	end
 	uart.write(0, yaw.weather[3][param]..'\n')
+end
+
+-- returns weather code for given day as 1, 2 and 3, where 1 is today, 2 tomorrow, and so on.
+function scmd.WWC(dayStr)
+  if ready() == false then
+    return
+  end
+  local day = tonumber(dayStr)
+  uart.write(0, mapCode(yaw.weather[day].code)..'\n')
 end
 
 -- https://developer.yahoo.com/weather/documentation.html#codes
@@ -88,13 +105,4 @@ local function mapCode(codeStr)
 	end	
 	
 	return mapped;
-end
-
--- returns weather code for given day as 1, 2 and 3, where 1 is today, 2 tomorrow, and so on.
-function scmd.YWC(dayStr)
-	if ready() == false then
-		return
-	end
-	local day = tonumber(dayStr)
-	uart.write(0, mapCode(yaw.weather[day].code)..'\n')
 end
