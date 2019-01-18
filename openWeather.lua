@@ -1,28 +1,11 @@
--- http://query.yahooapis.com/v1/public/yql?q=select%20item.forecast%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22munic%2C%20de%22)%20and%20u%3D%27c%27%20limit%203&format=json
+-- http://api.openweathermap.org/data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric
 require "wlan";
-yaw = {
-  url1 = "GET /v1/public/yql?q=select%20item.forecast,item.condition%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22",
-  url2 = "%2C%20",
-  url3 = "%22)%20and%20u%3D%27c%27%20limit%203&format=json",
-  city = "wroclaw",
-  country = "pl",
-  server = "query.yahooapis.com",
+owe = {
+  url = "GET /data/2.5/weather?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
+  server = "api.openweathermap.org",
   port = 80,
   timerId = 2,
-  syncPeriodSec = 3600, -- sync weather every hour
-
-  -- weather tabel contains forecast for x days
-  -- K: day number starting from 1, where 1 is today, 2 tomorrow, and so on.
-  -- V: table containing following keys:
-  --    low - min temp in celclus
-  --    high - max temp in celclus
-  --    day - 3 letter day code, like: Tue or Mon
-  --    code - https://developer.yahoo.com/weather/documentation.html#codes
-  --    date - date in form: 31 Aug 2016
-  --    text - description, like: Partly Cloudy, Thunderstorms or Sunny
-  -- examples:
-  --          - yaw.weather[1].low
-  --          - yaw.weather[2].date
+  syncPeriodSec = 1200, -- sync weather every 20 minutes
   weather = nil,
   responseCallback = nil
 }
@@ -81,9 +64,9 @@ local function close()
 end
 
 local function processWeatherJson(jsonStr)
-  yaw.weather = parseWeather(jsonStr)
-  if yaw.responseCallback ~= nil then
-    yaw.responseCallback()
+  owe.weather = parseWeather(jsonStr)
+  if owe.responseCallback ~= nil then
+    owe.responseCallback()
   end
 end
 
@@ -118,8 +101,8 @@ local function onReceive(cn, body)
 end
 
 local function onConnection(sck, c)
-  local get = yaw.url1..yaw.city..yaw.url2..yaw.country..yaw.url3..
-    "  HTTP/1.1\r\nHost: "..yaw.server.."\r\nAccept: */*\r\n\r\n"
+  local get = owe.url1..owe.city..owe.url2..owe.country..owe.url3..
+    "  HTTP/1.1\r\nHost: "..owe.server.."\r\nAccept: */*\r\n\r\n"
   sck:send(get)
 end
 
@@ -130,7 +113,7 @@ local function onDNSResponse(con, ip)
   end
   stats.ip = ip;
   stats.yahooReqTime = tmr.time()
-  con:connect(yaw.port, ip)
+  con:connect(owe.port, ip)
 end
 
 local function requestWeather()
@@ -139,19 +122,19 @@ local function requestWeather()
   con:on("receive", onReceive)
   con:on("connection", onConnection)
   stats.dnsReqTime = tmr.time()
-  con:dns(yaw.server, onDNSResponse)
+  con:dns(owe.server, onDNSResponse)
 end
 
 local function onTimer()  
   wlan.execute(requestWeather)
 end
 
-function yaw.start()
+function owe.start()
   onTimer()
-  tmr.alarm(yaw.timerId, yaw.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
+  tmr.alarm(owe.timerId, owe.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
 end
 
-function yaw.lastSyncSec()
+function owe.lastSyncSec()
   local lastSyncSec = -1
   if stats.yahooRespTime ~= -1 then
     lastSyncSec = tmr.time() - stats.yahooRespTime
@@ -161,9 +144,9 @@ end
 
 --[[
 local mt = {}
-mt.__tostring = function(yaw)
-	return string.format("YAW->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", yaw.lastSyncSec(), stats.ip, stats.dnsReqTime, 
+mt.__tostring = function(owe)
+	return string.format("owe->%d,%s,DNS_RQ:%d,Y_RQ:%d,Y_RS:%d", owe.lastSyncSec(), stats.ip, stats.dnsReqTime, 
 	   stats.yahooReqTime, stats.yahooRespTime)
 end
-setmetatable(yaw, mt)
+setmetatable(owe, mt)
 --]]

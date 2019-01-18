@@ -1,7 +1,7 @@
 require "credentials"
 require "serialAPI"
 require "serialAPIClock"
-require "serialAPIYahooWeather"
+require "serialAPIOpenWeather"
 
 ntpc.syncPeriodSec = 36000 -- 10 hours
 yaw.syncPeriodSec = 1800 -- 30 minutes
