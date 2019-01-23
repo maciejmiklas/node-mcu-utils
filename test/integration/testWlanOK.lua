@@ -2,11 +2,11 @@ require "credentials"
 require "wlan"
 
 local function printAbc() 
-	print("Wlan Status on connect:", tostring(wlan))
-    print("ABC")
+	print("Wlan Status on execute:", tostring(wifi.sta.IP))
+  print("ABC")
 end
 
 wlan.setup(cred.ssid, cred.password)
 
-print("Wlan Status on init:", tostring(wlan))
+print("Wlan Status on init:", tostring(wifi.sta.IP))
 wlan.execute(printAbc)

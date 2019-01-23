@@ -1,56 +1,52 @@
+require "log"
+
 wlan = {ssid="SSID not set", timerId = 0}
 
-local timerBusy = false
+local online = false
 local callbacks = {}
-local stats = {callbackError = 0}
+local offReason = nil
+
+local function onOnline(ev, info)
+  online = true
+  offReason = nil
+  log.info("Wlan ON:", info.ip, "/", info.netmask, ",gw:", info.gw)
+
+  -- execute callback waitnitg in queue
+  local clb = table.remove(callbacks)
+  while clb ~= nil do
+    local _, err = pcall(clb)
+    if err ~= nil then log.err(err) end
+    clb = table.remove(callbacks)
+  end
+end
+
+local function onOffline(ev, info)
+  online = false
+  if info.reason ~= offReason then
+    log.err("Wlan OFF:", info.reason)
+    offReason = info.reason
+  end
+end
 
 function wlan.setup(ssid, password)
-	wlan.ssid = ssid
-	wlan.password = password
-	wifi.setmode(wifi.STATION)
-	wifi.sta.config(wlan.ssid, wlan.password)
-	wifi.sta.autoconnect(1)
+  wifi.sta.on("disconnected", onOffline)
+  wifi.sta.on("got_ip", onOnline)
+
+  wlan.ssid = ssid
+  wlan.pwd = password
+  wifi.mode(wifi.STATION)
+  wifi.start()
+  wifi.sta.config(wlan)
 end
 
 -- this method can be executed multiple times. It will queue all callbacks untill it gets
 -- WiFi connection
 function wlan.execute(callback)
-	if wifi.sta.status() == 5 and wifi.sta.getip() ~= nil then
-		local _, err = pcall(callback)
-		if err ~= nil then stats.callbackError = err end				
-		return
-	end
+  if online then
+    local _, err = pcall(callback)
+    if err ~= nil then log.err(err) end
+    return
+  end
 
-	table.insert(callbacks, callback)
-	if timerBusy then
-		return
-	end
-	timerBusy = true
-
-	wifi.sta.connect()
-
-	tmr.alarm(wlan.timerId, 1000, tmr.ALARM_AUTO, function()
-		local status = wifi.sta.status()
-		local ip = wifi.sta.getip();
-		if status == 5 and ip ~= nil then
-			tmr.stop(wlan.timerId)
-			timerBusy = false
-			local clb = table.remove(callbacks)
-			while clb ~= nil do
-				local _, err = pcall(clb)
-				if err ~= nil then stats.callbackError = err end
-				clb = table.remove(callbacks)
-			end
-		end
-	end)
+  table.insert(callbacks, callback)
 end
-
---[[
-local mt = {}
-
-mt.__tostring = function(wl)
-	return string.format("WiFi->%s,ST:%u,ERR:%s", tostring(wifi.sta.getip()), wifi.sta.status(), stats.callbackError)
-end
-
-setmetatable(wlan, mt)
---]]

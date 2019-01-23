@@ -4,7 +4,7 @@ require "serialAPIClock"
 require "serialAPIOpenWeather"
 
 ntpc.syncPeriodSec = 36000 -- 10 hours
-yaw.syncPeriodSec = 1800 -- 30 minutes
+owe.syncPeriodSec = 1800 -- 30 minutes
 
 local syncMarginSec = 120
 
@@ -13,7 +13,7 @@ local syncMarginSec = 120
 function scmd.GST()
 	gtsCall = gtsCall + 1;
 	uart.write(0, string.format("NOW:%u;CNT:%u;RAM:%u;%s;%s;%s", tmr.time(), gtsCall, node.heap(),
-	 tostring(wlan), tostring(ntpc), tostring(yaw)))
+	 tostring(wlan), tostring(ntpc), tostring(owe)))
 end
 --]]
 
@@ -27,25 +27,25 @@ local function getNtpcStat()
   return ntpcStat;
 end
 
-local function getYawStat() 
-  local yawStat = ''
-  if yaw.lastSyncSec() == -1 then
-    yawStat = "WEATHER ERROR"  
-  elseif yaw.lastSyncSec() - syncMarginSec > yaw.syncPeriodSec then 
-    yawStat = "WEATHER OLD"
+local function getOweStat() 
+  local oweStat = ''
+  if owe.lastSyncSec() == -1 then
+    oweStat = "WEATHER ERROR"  
+  elseif owe.lastSyncSec() - syncMarginSec > owe.syncPeriodSec then 
+    oweStat = "WEATHER OLD"
   end
-  return yawStat;
+  return oweStat;
 end
 
 -- return short status for all modules.
 function scmd.GSS()
 
   local ntpcStat = getNtpcStat()
-  local yawStat = getYawStat()
+  local oweStat = getOweStat()
   
   local status
-  if ntpcStat ~= '' or yawStat ~= '' then
-    status = string.format("RAM:%u %s %s", node.heap(), ntpcStat, yawStat)
+  if ntpcStat ~= '' or oweStat ~= '' then
+    status = string.format("RAM:%u %s %s", node.heap(), ntpcStat, oweStat)
   else
     status = "1"
   end
@@ -63,4 +63,4 @@ sapi.start()
 ntpc.start("pool.ntp.org")
 
 -- start yahoo weather with serial API
-yaw.start()
+owe.start()
