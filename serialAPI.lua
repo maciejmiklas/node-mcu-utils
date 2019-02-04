@@ -1,4 +1,4 @@
-sapi = {pin = 4, baud = 115200}
+sapi = {uratId = 0, baud = 115200}
 scmd = {}
 
 local function onData(data)
@@ -24,9 +24,9 @@ local function onData(data)
 end
 
 function sapi.start()
-	gpio.mode(sapi.pin, gpio.OUTPUT)
+	--gpio.mode(sapi.pin, gpio.OUTPUT)
 	
 	-- configure for 115200, 8N1, no echo
-	uart.setup(0, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1, 0)
+	uart.setup(sapi.uratId, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1, 0)
 	uart.on("data", '\n', onData , 0)
 end

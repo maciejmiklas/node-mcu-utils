@@ -5,23 +5,18 @@ require "wlan";
 ntpc = {
 	current = 0, -- Curent UTC time in seconds since 1.1.1970.
 	syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
-	timerId = 1
+	lastSyncSec = -1 -- Seconds since last response from NTP server.
 }
 
 local ntp
 local lastReqSec = 0 -- Seconds since last sync request to NTP server
-local stats = {
-	ntpReqTime = -1,
-	ntpRespTime = -1
-}
 
 local function onNtpResponse(ts)
 	ntpc.current = ts
-	stats.ntpRespTime = tmr.time()
+	ntpc.lastSyncSec = 0
 end
 
 local function execNtpRequest()
-	stats.ntpReqTime = tmr.time()
 	lastReqSec = 0
 	ntp:requestTime()
 end
@@ -30,6 +25,7 @@ end
 local function onTimer()
 	ntpc.current = ntpc.current + 1
 	lastReqSec = lastReqSec + 1
+  ntpc.lastSyncSec = ntpc.lastSyncSec + 1
 	
 	if lastReqSec == ntpc.syncPeriodSec then
 		wlan.execute(execNtpRequest)
@@ -49,25 +45,11 @@ function ntpc.start(ntpServer)
 		ntp = NtpFactory:fromDefaultServer()
 	end
 
-	ntp:registerResponseCallback(onNtpResponse)
+	ntp:onResponse(onNtpResponse)
 	wlan.execute(execNtpRequest)
 	
 	-- timer must run every second, because we use it to drive clock.
-	tmr.alarm(ntpc.timerId, 1000, tmr.ALARM_AUTO, onTimer)
+	local timer = tmr.create()
+	timer:register(1000, tmr.ALARM_AUTO, onTimer)
+	timer:start()
 end
-
-function ntpc.lastSyncSec() 
-	local lastSyncSec = -1
-	if stats.ntpRespTime ~= -1 then
-		lastSyncSec = tmr.time() - stats.ntpRespTime
-	end
-	return lastSyncSec;
-end
-
---[[
-local mt = {}
-mt.__tostring = function(ntpc)
-	return string.format("NTPC->%d,N_RQ:%d,N_RS:%d,%s", ntpc.lastSyncSec(), stats.ntpReqTime, stats.ntpRespTime, tostring(ntp))
-end
-setmetatable(ntpc, mt)
---]]

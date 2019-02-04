@@ -1,0 +1,31 @@
+{
+  "cod": "200",
+  "message": 0.0042,
+  "cnt": 40,
+  "list": [
+    {
+      "dt": 1548784800,
+      "main": {
+        "temp": -2.05,
+        "temp_min": -2.18,
+        "temp_max": -2.05,
+        "pressure": 998.5,
+        "sea_level": 1019.79,
+        "grnd_level": 998.5,
+        "humidity": 89,
+        "temp_kf": 0.12
+      },
+      "weather": [
+        {
+          "id": 800,
+          "main": "Clear",
+          "description": "clear sky",
+          "icon": "01n"
+        }
+      ],
+      "clouds": {
+        "all": 36
+      },
+      "wind": {
+        "speed": 1.56,
+        "deg": 233.002

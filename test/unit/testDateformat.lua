@@ -1,7 +1,7 @@
 require "dateformatEurope";
 require "dateformatAmerica";
 
-testCnt = 0;
+local testCnt = 0;
 local function parseDate(expDate)
 	local _, _, expYearStr, expMonthStr, expDayStr, expHourStr, expMinStr, expSecStr =
 		string.find(expDate, "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")

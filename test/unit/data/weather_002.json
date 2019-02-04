@@ -1,0 +1,43 @@
+ },
+      "rain": {},
+      "snow": {
+        "3h": 0.004
+      },
+      "sys": {
+        "pod": "n"
+      },
+      "dt_txt": "2019-01-29 18:00:00"
+    },
+    {
+      "dt": 1548795600,
+      "main": {
+        "temp": -2.27,
+        "temp_min": -2.37,
+        "temp_max": -2.27,
+        "pressure": 998.24,
+        "sea_level": 1019.6,
+        "grnd_level": 998.24,
+        "humidity": 87,
+        "temp_kf": 0.09
+      },
+      "weather": [
+        {
+          "id": 600,
+          "main": "Snow",
+          "description": "light snow",
+          "icon": "13n"
+        }
+      ],
+      "clouds": {
+        "all": 48
+      },
+      "wind": {
+        "speed": 2.56,
+        "deg": 160.001
+      },
+      "rain": {},
+      "snow": {
+        "3h": 0.03975
+      },
+      "sys": {
+        "pod": "n"

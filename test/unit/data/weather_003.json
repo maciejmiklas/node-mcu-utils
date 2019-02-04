@@ -1,0 +1,40 @@
+   },
+      "dt_txt": "2019-01-29 21:00:00"
+    },
+    {
+      "dt": 1548806400,
+      "main": {
+        "temp": -3.64,
+        "temp_min": -3.7,
+        "temp_max": -3.64,
+        "pressure": 997.27,
+        "sea_level": 1018.69,
+        "grnd_level": 997.27,
+        "humidity": 82,
+        "temp_kf": 0.06
+      },
+      "weather": [
+        {
+          "id": 800,
+          "main": "Clear",
+          "description": "clear sky",
+          "icon": "01n"
+        }
+      ],
+      "clouds": {
+        "all": 12
+      },
+      "wind": {
+        "speed": 2.22,
+        "deg": 150.005
+      },
+      "rain": {},
+      "snow": {
+        "3h": 0.02125
+      },
+      "sys": {
+        "pod": "n"
+      },
+      "dt_txt": "2019-01-30 00:00:00"
+    },
+    {

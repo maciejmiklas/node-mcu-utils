@@ -7,6 +7,5 @@ local function printAbc()
 end
 
 wlan.setup(cred.ssid, cred.password)
-
 print("Wlan Status on init:", tostring(wifi.sta.IP))
 wlan.execute(printAbc)

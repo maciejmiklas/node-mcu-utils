@@ -23,11 +23,7 @@ local function printTime(ts)
 	collectgarbage() print("RAM after printTime", node.heap())
 end
 
-ntp:registerResponseCallback(printTime)
-
+ntp:onResponse(printTime)
 wlan.execute(function() ntp:requestTime() end)
-
-tmr.alarm(2, 5000, tmr.ALARM_AUTO, function() print("NTP Status:", tostring(ntp), tostring(wlan)) end) 
-
 collectgarbage() print("RAM callbacks", node.heap())
  

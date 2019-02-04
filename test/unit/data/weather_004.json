@@ -1,0 +1,26 @@
+ {
+      "dt": 1548817200,
+      "main": {
+        "temp": -5.3,
+        "temp_min": -5.34,
+        "temp_max": -5.3,
+        "pressure": 996.21,
+        "sea_level": 1017.69,
+        "grnd_level": 996.21,
+        "humidity": 85,
+        "temp_kf": 0.03
+      },
+      "weather": [
+        {
+          "id": 800,
+          "main": "Clear",
+          "description": "clear sky",
+          "icon": "01n"
+        }
+      ],
+      "clouds": {
+        "all": 0
+      },
+      "wind": {
+        "speed": 2.51,
+        "deg": 124.502
