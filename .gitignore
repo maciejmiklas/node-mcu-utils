@@ -1,7 +1,10 @@
 # Compiled Lua sources
+*.iml
 credentials.lua
 luac.out
 .settings
+
+.idea
 
 # luarocks build files
 *.src.rock
