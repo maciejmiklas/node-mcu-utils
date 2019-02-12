@@ -15,7 +15,6 @@ df = {
 }
 
 local monLengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-local monthsToDaysCumulative = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 }
 
 -- For Sakamoto's Algorithm (day of week)
 local sakamoto = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };

@@ -22,7 +22,6 @@ end
 
 function jlp:data(data)
     local dataIdx = 1
-    local dataSize = string.len(data)
     if not self.listFound then
         local listIdx = string.find(data, self.listElementName)
         if listIdx == -1 then
@@ -31,42 +30,45 @@ function jlp:data(data)
             dataIdx = listIdx
             self.listFound = true
         end
+    elseif self.tmp then
+        data = self.tmp .. data
+    end
+    self.tmp = nil
+
+    local lBracketIdx = -1
+    local lBracketCnt = 0
+    local rBracketCnt = 0
+    local dataLen = data:len(data)
+    local lastDocEnd = -1
+    for idx = dataIdx, dataLen, 1 do
+        local chr = data:sub(idx, idx)
+        if chr == "{" then
+            if lBracketCnt == 0 then
+                lBracketIdx = idx
+            end
+            lBracketCnt = lBracketCnt + 1
+
+        elseif chr == "}" then
+            rBracketCnt = rBracketCnt + 1
+        end
+
+        if lBracketCnt > 0 and rBracketCnt > 0 and lBracketCnt == rBracketCnt then
+            local docTxt = data:sub(lBracketIdx, idx)
+            print("DECODE: ", docTxt)
+            local jobj = self.decoder:decode(docTxt)
+            self.elementReadyCallback(jobj)
+            lBracketIdx = -1
+            lBracketCnt = 0
+            rBracketCnt = 0
+            lastDocEnd = idx
+        end
     end
 
-    local listBeginIdx
-    local listEndIdx
-
-    while (dataIdx < dataSize) do
-        listBeginIdx = string.find(data, "{", dataIdx)
-        if listBeginIdx then
-            dataIdx = listBeginIdx
-        elseif not self.tmp then
-            break
+    if lBracketCnt ~= rBracketCnt then
+        local dataStart = dataIdx
+        if lastDocEnd ~= -1 then
+            dataStart = lastDocEnd + 1
         end
-
-        listEndIdx = string.find(data, "},%s*{", dataIdx)
-        if listEndIdx then
-            dataIdx = listEndIdx
-        else
-        end
-
-        local listEl
-        if self.tmp then
-            local listEnd = string.sub(data, 1, listEndIdx)
-            listEl = self.tmp .. listEnd
-            self.tmp = nil
-        else
-            if listBeginIdx and not listEndIdx then
-                self.tmp = string.sub(data, listBeginIdx, dataSize)
-                break
-            else
-                listEl = string.sub(data, listBeginIdx, listEndIdx)
-            end
-        end
-        print("DECODE: ", listEl)
-        local jobj = self.decoder:decode(listEl)
-        self.elementReadyCallback(jobj)
-        print(listBeginIdx, " - ", listEndIdx, " - ", dataIdx, " - ", dataSize)
+        self.tmp = data:sub(dataStart, dataLen) data:sub(1, 10)
     end
 end
-
