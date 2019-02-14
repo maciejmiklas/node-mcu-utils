@@ -30,7 +30,7 @@
 require "openWeather";
 
 local function ready()
-    if owe.weather ~= nil then
+    if owe_net.weather ~= nil then
         return true
     end
     uart.write(0, "ER\n")
@@ -38,7 +38,7 @@ local function ready()
 end
 
 function scmd.WST()
-    if owe.weather ~= nil then
+    if owe_net.weather ~= nil then
         uart.write(0, "OK\n")
     else
         uart.write(0, "ER\n")
@@ -52,7 +52,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    uart.write(0, owe.weather[0][param] .. '\n')
+    uart.write(0, owe_net.weather[0][param] .. '\n')
 end
 
 -- formatted weather text for 3 days intenden to be used with LEAClock
@@ -74,21 +74,21 @@ function scmd.WF1(param)
     if ready() == false then
         return
     end
-    uart.write(0, owe.weather[1][param] .. '\n')
+    uart.write(0, owe_net.weather[1][param] .. '\n')
 end
 
 function scmd.WF2(param)
     if ready() == false then
         return
     end
-    uart.write(0, owe.weather[2][param] .. '\n')
+    uart.write(0, owe_net.weather[2][param] .. '\n')
 end
 
 function scmd.WF3(param)
     if ready() == false then
         return
     end
-    uart.write(0, owe.weather[3][param] .. '\n')
+    uart.write(0, owe_net.weather[3][param] .. '\n')
 end
 
 -- returns weather code for given day as 1, 2 and 3, where 1 is today, 2 tomorrow, and so on.
@@ -97,7 +97,7 @@ function scmd.WWC(dayStr)
         return
     end
     local day = tonumber(dayStr)
-    uart.write(0, mapCode(owe.weather[day].code) .. '\n')
+    uart.write(0, mapCode(owe_net.weather[day].code) .. '\n')
 end
 
 -- https://developer.yahoo.com/weather/documentation.html#codes

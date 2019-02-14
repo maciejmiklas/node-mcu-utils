@@ -1,6 +1,6 @@
 -- http://api.openweathermap.org/data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric
 require "wlan";
-owe = {
+owe_net = {
     url = "GET /data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
     server = "api.openweathermap.org",
     port = 80,
@@ -93,8 +93,8 @@ local function onReceive(cn, body)
 end
 
 local function onConnection(sck, c)
-    local get = owe.url ..
-            "  HTTP/1.1\r\nHost: " .. owe.server .. "\r\nAccept: */*\r\n\r\n"
+    local get = owe_net.url ..
+            "  HTTP/1.1\r\nHost: " .. owe_net.server .. "\r\nAccept: */*\r\n\r\n"
     sck:send(get)
 end
 
@@ -102,7 +102,7 @@ local function onDNSResponse(con, ip)
     if ip == nil then
         return
     end
-    con:connect(owe.port, ip)
+    con:connect(owe_net.port, ip)
 end
 
 local function requestWeather()
@@ -111,18 +111,18 @@ local function requestWeather()
     con:on("receive", onReceive)
     con:on("connection", onConnection)
     --con:dns(owe.server, onDNSResponse)
-    con:connect(owe.port, owe.server)
+    con:connect(owe_net.port, owe_net.server)
 end
 
 local function onTimer()
     wlan.execute(requestWeather)
 end
 
-function owe.start()
+function owe_net.start()
     onTimer()
 
     local timer = tmr.create()
-    timer:register(owe.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
+    timer:register(owe_net.syncPeriodSec * 1000, tmr.ALARM_AUTO, onTimer)
     timer:start()
 end
 

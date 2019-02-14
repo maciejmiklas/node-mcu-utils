@@ -1,8 +1,5 @@
 require "jsonListParser"
-
---https://github.com/rxi/json.lua
-json = require("test/unit/json")
-sjson = {}
+require "test/unit/sjsonWrapper"
 
 local foundCnt = 1
 local expectedData = {
@@ -49,17 +46,7 @@ local expectedData = {
 }
 
 local testCnt = 0;
-local sjson_mt = { __index = sjson }
 
-function sjson.decoder()
-    local obj = {}
-    setmetatable(obj, sjson_mt)
-    return obj
-end
-
-function sjson:decode(data)
-    return json.decode(data)
-end
 
 local function readFile(file)
     local f = assert(io.open(file, "rb"))

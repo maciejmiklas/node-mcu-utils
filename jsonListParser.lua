@@ -54,7 +54,6 @@ function jlp:data(data)
 
         if lBracketCnt > 0 and rBracketCnt > 0 and lBracketCnt == rBracketCnt then
             local docTxt = data:sub(lBracketIdx, idx)
-            print("DECODE: ", docTxt)
             local jobj = self.decoder:decode(docTxt)
             self.elementReadyCallback(jobj)
             lBracketIdx = -1

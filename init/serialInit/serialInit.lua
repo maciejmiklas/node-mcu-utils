@@ -6,7 +6,7 @@ require "serialAPIOpenWeather"
 --ntpc.syncPeriodSec = 36000 -- 10 hours 
 --owe.syncPeriodSec = 1800 -- 30 minutes
 ntpc.syncPeriodSec = 600
-owe.syncPeriodSec = 600
+owe_net.syncPeriodSec = 600
 
 local syncToleranceSec = 60
 
@@ -22,9 +22,9 @@ end
 
 local function getOweStat() 
   local oweStat = ''
-  if owe.lastSyncSec == -1 then
+  if owe_net.lastSyncSec == -1 then
     oweStat = "WEATHER ERROR"  
-  elseif owe.lastSyncSec - syncToleranceSec > owe.syncPeriodSec then 
+  elseif owe_net.lastSyncSec - syncToleranceSec > owe_net.syncPeriodSec then
     oweStat = "WEATHER OLD"
   end
   return oweStat;
@@ -55,4 +55,4 @@ sapi.start()
 ntpc.start("pool.ntp.org")
 
 -- start yahoo weather with serial API
-owe.start()
+owe_net.start()
