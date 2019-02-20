@@ -8,7 +8,7 @@
       "main": {
         "temp": -2.05,
         "temp_min": -2.18,
-        "temp_max": -2.05,
+        "temp_max": -3.05,
         "pressure": 998.5,
         "sea_level": 1019.79,
         "grnd_level": 998.5,
@@ -43,7 +43,7 @@
       "dt": 1548795600,
       "main": {
         "temp": -2.27,
-        "temp_min": -2.37,
+        "temp_min": -3.37,
         "temp_max": -2.27,
         "pressure": 998.24,
         "sea_level": 1019.6,
@@ -184,7 +184,7 @@
       "main": {
         "temp": -3.75,
         "temp_min": -3.75,
-        "temp_max": -3.75,
+        "temp_max": 1.75,
         "pressure": 995.34,
         "sea_level": 1016.71,
         "grnd_level": 995.34,
@@ -216,7 +216,7 @@
       "dt": 1548849600,
       "main": {
         "temp": -1.27,
-        "temp_min": -1.27,
+        "temp_min": -5.27,
         "temp_max": -1.27,
         "pressure": 994.74,
         "sea_level": 1015.89,
@@ -252,7 +252,7 @@
       "main": {
         "temp": -1,
         "temp_min": -1,
-        "temp_max": -1,
+        "temp_max": 4,
         "pressure": 994.49,
         "sea_level": 1015.61,
         "grnd_level": 994.49,
@@ -287,7 +287,7 @@
       "main": {
         "temp": -1.89,
         "temp_min": -1.89,
-        "temp_max": -1.89,
+        "temp_max": 5.23,
         "pressure": 994.93,
         "sea_level": 1016.15,
         "grnd_level": 994.93,
@@ -321,8 +321,8 @@
       "dt": 1548882000,
       "main": {
         "temp": -2.32,
-        "temp_min": -2.32,
-        "temp_max": -2.32,
+        "temp_min": 2.32,
+        "temp_max": 6.32,
         "pressure": 995.36,
         "sea_level": 1016.62,
         "grnd_level": 995.36,
