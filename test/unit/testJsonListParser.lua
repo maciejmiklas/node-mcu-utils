@@ -1,8 +1,7 @@
 require "jsonListParser"
-require "test/unit/sjsonWrapper"
 
 local foundCnt = 1
-local expectedData = {
+local expectedData_a = {
     { "2019-01-29 18:00:00", -2.05 },
     { "2019-01-29 21:00:00", -2.27 },
     { "2019-01-30 00:00:00", -3.64 },
@@ -55,13 +54,19 @@ local function readFile(file)
     return content
 end
 
-local function porcessWeatherPart(doc)
+local function porcessWeatherPart_a(doc)
     if not doc.dt_txt then return end
-    local ev = expectedData[foundCnt]
+    local ev = expectedData_a[foundCnt]
     foundCnt = foundCnt + 1
 
     assert(doc.dt_txt == ev[1], "Error on " .. foundCnt .. " - " .. ev[1])
     assert(doc.main.temp == ev[2], "Error on " .. foundCnt .. " - " .. ev[2])
+end
+
+local function porcessWeatherPart_b(doc)
+    if not doc.dt_txt then return end
+    local ev = expectedData_a[foundCnt]
+    foundCnt = foundCnt + 1
 end
 
 local function testParseWholeDocumentAtOnce()
@@ -69,28 +74,47 @@ local function testParseWholeDocumentAtOnce()
     testCnt = testCnt + 1
     local data = readFile("test/unit/data/weather.json")
     local jp = JsonListParserFactory.create()
-    jp:onElementReady(porcessWeatherPart)
+    jp:onElementReady(porcessWeatherPart_a)
     jp:data(data)
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
 
-local function testParseChunks()
+local function testParseChunks_a()
     foundCnt = 1
     testCnt = testCnt + 1
     local jp = JsonListParserFactory.create()
-    jp:onElementReady(porcessWeatherPart)
-    jp:data(readFile("test/unit/data/weather_001.json"))
-    jp:data(readFile("test/unit/data/weather_002.json"))
-    jp:data(readFile("test/unit/data/weather_003.json"))
-    jp:data(readFile("test/unit/data/weather_004.json"))
-    jp:data(readFile("test/unit/data/weather_005.json"))
-    jp:data(readFile("test/unit/data/weather_006.json"))
-    jp:data(readFile("test/unit/data/weather_007.json"))
+    jp:onElementReady(porcessWeatherPart_a)
+    jp:data(readFile("test/unit/data/weather_a_001.json"))
+    jp:data(readFile("test/unit/data/weather_a_002.json"))
+    jp:data(readFile("test/unit/data/weather_a_003.json"))
+    jp:data(readFile("test/unit/data/weather_a_004.json"))
+    jp:data(readFile("test/unit/data/weather_a_005.json"))
+    jp:data(readFile("test/unit/data/weather_a_006.json"))
+    jp:data(readFile("test/unit/data/weather_a_007.json"))
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
 
+local function testParseChunks_b()
+    foundCnt = 1
+    testCnt = testCnt + 1
+    local jp = JsonListParserFactory.create()
+    jp:onElementReady(porcessWeatherPart_b)
+    jp:data(readFile("test/unit/data/weather_b_001.json"))
+    jp:data(readFile("test/unit/data/weather_b_002.json"))
+    jp:data(readFile("test/unit/data/weather_b_003.json"))
+    jp:data(readFile("test/unit/data/weather_b_004.json"))
+    jp:data(readFile("test/unit/data/weather_b_005.json"))
+    jp:data(readFile("test/unit/data/weather_b_006.json"))
+    jp:data(readFile("test/unit/data/weather_b_007.json"))
+    jp:data(readFile("test/unit/data/weather_b_008.json"))
+    jp:data(readFile("test/unit/data/weather_b_009.json"))
+
+    assert(foundCnt == 37, "Found only: " .. foundCnt)
+end
+
 testParseWholeDocumentAtOnce()
-testParseChunks()
+testParseChunks_a()
+testParseChunks_b()
 print("Done - Executed " .. testCnt .. " tests, all OK")

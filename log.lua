@@ -1,28 +1,16 @@
-log = {}
+log = {
+    isInfo = true,
+    isWarn = true
+}
 
-function log.info(...)
-    local msg = ""
-    for i, v in ipairs(arg) do
-        msg = msg .. tostring(v)
-    end
-
-    print("#### " .. msg)
+function log.info(msg)
+    print("## " .. msg)
 end
 
-function log.err(...)
-    local msg = ""
-    for i, v in ipairs(arg) do
-        msg = msg .. tostring(v)
-    end
-
+function log.error(msg)
     print("##ERR## " .. msg)
 end
 
-function log.warn(...)
-    local msg = ""
-    for i, v in ipairs(arg) do
-        msg = msg .. tostring(v)
-    end
-
+function log.warn(msg)
     print("##WARN## " .. msg)
 end

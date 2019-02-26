@@ -22,7 +22,7 @@
 -- SOFTWARE.
 --
 
-local json = { _version = "0.1.1" }
+json = { _version = "0.1.1" }
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -61,7 +61,7 @@ local function encode_table(val, stack)
     stack = stack or {}
 
     -- Circular reference?
-    if stack[val] then error("circular reference") end
+    if stack[val] then log.error("circular reference") end
 
     stack[val] = true
 
@@ -70,12 +70,12 @@ local function encode_table(val, stack)
         local n = 0
         for k in pairs(val) do
             if type(k) ~= "number" then
-                error("invalid table: mixed or invalid key types")
+                log.error("invalid table: mixed or invalid key types")
             end
             n = n + 1
         end
         if n ~= #val then
-            error("invalid table: sparse array")
+            log.error("invalid table: sparse array")
         end
         -- Encode
         for i, v in ipairs(val) do
@@ -88,7 +88,7 @@ local function encode_table(val, stack)
         -- Treat as an object
         for k, v in pairs(val) do
             if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types")
+                log.error("invalid table: mixed or invalid key types")
             end
             table.insert(res, encode(k, stack) .. ":" .. encode(v, stack))
         end
@@ -106,7 +106,7 @@ end
 local function encode_number(val)
     -- Check for NaN, -inf and inf
     if val ~= val or val <= -math.huge or val >= math.huge then
-        error("unexpected number value '" .. tostring(val) .. "'")
+        log.error("unexpected number value '" .. tostring(val) .. "'")
     end
     return string.format("%.14g", val)
 end
@@ -127,7 +127,7 @@ encode = function(val, stack)
     if f then
         return f(val, stack)
     end
-    error("unexpected type '" .. t .. "'")
+    log.error("unexpected type '" .. t .. "'")
 end
 
 
@@ -182,7 +182,7 @@ local function decode_error(str, idx, msg)
             col_count = 1
         end
     end
-    error( string.format("%s at line %d col %d", msg, line_count, col_count) )
+    log.error(string.format("%s at line %d col %d", msg, line_count, col_count) )
 end
 
 
@@ -199,7 +199,7 @@ local function codepoint_to_utf8(n)
         return string.char(f(n / 262144) + 240, f(n % 262144 / 4096) + 128,
             f(n % 4096 / 64) + 128, n % 64 + 128)
     end
-    error( string.format("invalid unicode codepoint '%x'", n) )
+    log.error( string.format("invalid unicode codepoint '%x'", n) )
 end
 
 
@@ -386,7 +386,7 @@ end
 
 function json.decode(str)
     if type(str) ~= "string" then
-        error("expected argument of type string, got " .. type(str))
+        log.error("expected argument of type string, got " .. type(str))
     end
     local res, idx = parse(str, next_char(str, 1, space_chars, true))
     idx = next_char(str, idx, space_chars, true)
@@ -395,6 +395,3 @@ function json.decode(str)
     end
     return res
 end
-
-
-return json

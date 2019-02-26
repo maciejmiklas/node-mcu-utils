@@ -20,6 +20,17 @@ function scmd.WST()
     end
 end
 
+
+function scmd.WFC()
+    local today = owe_p.forecast[1]
+    local codesStr = ""
+    for i = 1, today.codesSize do
+        if i > 1 then codesStr = codesStr .. "," end
+        codesStr = codesStr .. today.codes[i]
+    end
+    uart.write(0, codesStr .. '\n')
+end
+
 -- current weather
 -- Possible params:
 -- - temp - current temp
@@ -28,13 +39,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    if param == "temp" then
-        uart.write(0, owe_p.forecast[1].temp .. '\n')
-    elseif param == "icons" then
-        uartError()
-    else
-        uartError()
-    end
+    uart.write(0, owe_p.current[param] .. '\n')
 end
 
 -- formatted weather text for 3 days intenden to be used with LEAClock

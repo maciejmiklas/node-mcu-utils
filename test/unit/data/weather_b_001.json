@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Server: openresty
+Date: Mon, 25 Feb 2019 07:55:50 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 14118
+Connection: keep-alive
+X-Cache-Key: /data/2.5/forecast?id=3081368&units=metric
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: GET, POST
+
+{"cod":"200","message":0.0034,"cnt":40,"list":[{"dt":1551085200,"main":{"temp":6.14,"temp_min":5.08,"temp_max":6.14,"pressure":1036.89,"sea_level":1036.89,"grnd_level":1015.71,"humidity":68,"temp_kf":1.06},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"02d"}],"clouds":{"all":8},"wind":{"speed":5.16,"deg":302.504},"sys":{"pod":"d"},"dt_txt":"2019-02-25 09:00:00"},{"dt":1551096000,"main":{"temp":9.54,"temp_min":8.75,"temp_max":9.54,"pressure":1035.27,"sea_level":1035.27,"grnd_level":1014.4,"humidity":72,"temp_kf":0.79},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"clouds":{"all":0},"wind":{"speed":5.66,"deg":296.001},"sys":{"pod":"d"},"dt_txt":"2019-02-25 12:00:00"},{"dt":1551106800,"main":{"temp":8.77,"temp_min":8.24,"temp_max":8.77,"pressure":1033.21,"sea_level":1033.21,"grnd_level":1012.44,"humidity":68,"temp_kf":0.53},"weather":[{"id":802,"main":"Clouds","description":"scattered clouds","icon":"03d"}],"clouds":{"all":32},"wind":{"speed":5.47,"deg":297.504},"sys":{"pod":"d"},"dt_txt":"2019-02-25 15:00:00"},{"dt":1551117600,"m

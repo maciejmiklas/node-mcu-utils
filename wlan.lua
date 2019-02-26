@@ -9,13 +9,13 @@ local offReason = nil
 local function onOnline(ev, info)
     online = true
     offReason = nil
-    log.info("Wlan ON:", info.ip, "/", info.netmask, ",gw:", info.gw)
+    if log.isInfo then log.info("Wlan ON:" .. info.ip .. "/" .. info.netmask .. ",gw:" .. info.gw) end
 
     -- execute callback waitnitg in queue
     local clb = table.remove(callbacks)
     while clb ~= nil do
         local _, err = pcall(clb)
-        if err ~= nil then log.err(err) end
+        if err ~= nil then log.error(err) end
         clb = table.remove(callbacks)
     end
 end
@@ -23,7 +23,7 @@ end
 local function onOffline(ev, info)
     online = false
     if info.reason ~= offReason then
-        log.err("Wlan OFF:", info.reason)
+        log.warn("Wlan OFF:", info.reason)
         offReason = info.reason
     end
 end
@@ -44,7 +44,7 @@ end
 function wlan.execute(callback)
     if online then
         local _, err = pcall(callback)
-        if err ~= nil then log.err(err) end
+        if err ~= nil then log.error(err) end
         return
     end
 

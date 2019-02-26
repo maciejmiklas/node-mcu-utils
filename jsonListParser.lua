@@ -1,18 +1,18 @@
+require "json"
+require "log"
 JsonListParserFactory = {}
 
 local jlp = {
     elementReadyCallback = nil,
     listElementName = "list",
     listFound = false,
-    tmp = nil,
-    decoder = nil
+    tmp = nil
 }
 
 local mt = { __index = jlp }
 function JsonListParserFactory:create()
     local obj = {}
     setmetatable(obj, mt)
-    obj.decoder = sjson.decoder()
     return obj
 end
 
@@ -20,7 +20,12 @@ function jlp:onElementReady(callback)
     self.elementReadyCallback = callback
 end
 
-function jlp:data(data)
+function jlp:reset()
+    self.listFound = false
+    self.tmp = nil
+end
+
+function jlp:onData(data)
     local dataIdx = 1
     if not self.listFound then
         local listIdx = string.find(data, self.listElementName)
@@ -54,8 +59,9 @@ function jlp:data(data)
 
         if lBracketCnt > 0 and rBracketCnt > 0 and lBracketCnt == rBracketCnt then
             local docTxt = data:sub(lBracketIdx, idx)
-            local jobj = self.decoder:decode(docTxt)
+            local jobj = json.decode(docTxt)
             self.elementReadyCallback(jobj)
+
             lBracketIdx = -1
             lBracketCnt = 0
             rBracketCnt = 0

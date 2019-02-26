@@ -8,6 +8,7 @@ owe_p = {
     forecast = {},
     -- forecast as text for 3 days
     forecastText = nil,
+    current = {},
     hasWeather = false
 }
 
@@ -15,7 +16,7 @@ owe_p = {
 local tmp = {}
 local tmp_idx = 1
 
-function owe_p.onDataStart()
+function owe_p.reset()
     tmp_idx = 1
     tmp = {}
 end
@@ -24,7 +25,18 @@ function roundTmp(val)
     return math.floor(val * 10 + 0.5) / 10
 end
 
-local function onDataEnd()
+local function updateCurrent()
+    local today = owe_p.forecast[1]
+    local codesStr = ""
+    for i = 1, today.codesSize do
+        if i > 1 then codesStr = codesStr .. "," end
+        codesStr = codesStr .. today.codes[i]
+    end
+    owe_p.current.icons = codesStr
+    owe_p.current.temp = owe_p.forecast[1].temp
+end
+
+local function updateForecast()
     local text = ""
     for idx, weather in pairs(owe_p.forecast) do
         local tempMin = roundTmp(weather.tempMin)
@@ -32,15 +44,21 @@ local function onDataEnd()
         if idx > 1 then
             text = text .. " >> "
         end
-        text = text .. weather.day .. ": v" .. tempMin .. " ˆ" .. tempMax
+        text = text .. weather.day .. ": ^" .. tempMin .. " !" .. tempMax
         for dIdx, desc in pairs(weather.description) do
             text = text .. " " .. desc
-            if dIdx < weather.codeSize then
+            if dIdx < weather.codesSize then
                 text = text .. ","
             end
         end
     end
     owe_p.forecastText = text
+end
+
+local function onDataEnd()
+    if log.isInfo then log.info("Got weather") end
+    updateCurrent()
+    updateForecast()
     owe_p.hasWeather = true
 end
 
@@ -106,8 +124,8 @@ local function calculateDateRange(data)
     el.tempMin = 1000
     el.tempMax = -1000
     el.description = {}
-    el.code = {}
-    el.codeSize = 0
+    el.codes = {}
+    el.codesSize = 0
     el.day = data.day
 
     for idx, weather in pairs(data.el) do
@@ -118,8 +136,8 @@ local function calculateDateRange(data)
         el.tempMax = math.max(el.tempMax, weather.tempMax)
         if not contains(el.description, weather.description) then
             table.insert(el.description, weather.description)
-            table.insert(el.code, mapCode(weather.id))
-            el.codeSize = el.codeSize + 1
+            table.insert(el.codes, mapCode(weather.id))
+            el.codesSize = el.codesSize + 1
         end
     end
     owe_p.forecast[tmp_idx] = el
