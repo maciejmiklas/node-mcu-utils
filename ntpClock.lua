@@ -5,11 +5,22 @@ require "wlan";
 ntpc = {
     current = 0, -- Curent UTC time in seconds since 1.1.1970.
     syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
-    lastSyncSec = -1 -- Seconds since last response from NTP server.
+    lastSyncSec = -1, -- Seconds since last response from NTP server.
+    syncToleranceSec = 60
 }
 
 local ntp
 local lastReqSec = 0 -- Seconds since last sync request to NTP server
+
+function ntpc.status()
+    local status = nil
+    if ntpc.lastSyncSec == -1 then
+        status = "TIME ERROR"
+    elseif ntpc.lastSyncSec - ntpc.syncToleranceSec > ntpc.syncPeriodSec then
+        status = "TIME OLD"
+    end
+    return status;
+end
 
 local function onNtpResponse(ts)
     ntpc.current = ts

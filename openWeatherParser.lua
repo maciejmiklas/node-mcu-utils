@@ -13,12 +13,20 @@ owe_p = {
 }
 
 -- forecast by day
-local tmp = {}
-local tmp_idx = 1
+local tmp = {
+    dayForecast = {},
+    dayForecastIdx = 1,
+    forecast = {}
+}
 
-function owe_p.reset()
-    tmp_idx = 1
-    tmp = {}
+local function reset()
+    tmp.dayForecast = {}
+    tmp.dayForecastIdx = 1
+    tmp.forecast = {}
+end
+
+function owe_p.onDataStart()
+    reset()
 end
 
 function roundTmp(val)
@@ -36,7 +44,7 @@ local function updateCurrent()
     owe_p.current.temp = owe_p.forecast[1].temp
 end
 
-local function updateForecast()
+local function updateForecastText()
     local text = ""
     for idx, weather in pairs(owe_p.forecast) do
         local tempMin = roundTmp(weather.tempMin)
@@ -57,9 +65,11 @@ end
 
 local function onDataEnd()
     if log.isInfo then log.info("Got weather") end
+    owe_p.forecast = tmp.forecast
     updateCurrent()
-    updateForecast()
+    updateForecastText()
     owe_p.hasWeather = true
+    reset()
 end
 
 --https://openweathermap.org/weather-conditions
@@ -140,22 +150,24 @@ local function calculateDateRange(data)
             el.codesSize = el.codesSize + 1
         end
     end
-    owe_p.forecast[tmp_idx] = el
+    tmp.forecast[tmp.dayForecastIdx] = el
 end
 
-local function onDataEl(el)
-    if tmp.day == nil or tmp.day ~= el.day then
-        if tmp.day then
-            calculateDateRange(tmp)
-            if tmp_idx == owe_p.forecastDays then
+local function nextDocument(el)
+    if tmp.dayForecast.day == nil or tmp.dayForecast.day ~= el.day then
+        if tmp.dayForecast.day then
+            calculateDateRange(tmp.dayForecast)
+            if tmp.dayForecastIdx == owe_p.forecastDays then
                 onDataEnd()
+                return false
             end
-            tmp_idx = tmp_idx + 1
+            tmp.dayForecastIdx = tmp.dayForecastIdx + 1
         end
-        tmp.day = el.day
-        tmp.el = {}
+        tmp.dayForecast.day = el.day
+        tmp.dayForecast.el = {}
     end
-    table.insert(tmp.el, el)
+    table.insert(tmp.dayForecast.el, el)
+    return true
 end
 
 local function acceptTime(date)
@@ -164,8 +176,8 @@ local function acceptTime(date)
     return hour >= 6 and hour <= 21
 end
 
-function owe_p.onData(doc)
-    if tmp_idx == owe_p.forecastDays + 1 then
+function owe_p.onNextDocument(doc)
+    if tmp.dayForecastIdx == owe_p.forecastDays + 1 then
         return
     end
     if not doc.dt_txt then return end
@@ -183,5 +195,5 @@ function owe_p.onData(doc)
     local dw = doc.weather[1]
     val.description = dw.description
     val.id = dw.id
-    onDataEl(val)
+    nextDocument(val)
 end

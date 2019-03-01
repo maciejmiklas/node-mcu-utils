@@ -6,7 +6,8 @@ local jlp = {
     elementReadyCallback = nil,
     listElementName = "list",
     listFound = false,
-    tmp = nil
+    tmp = nil,
+    keepReading = true
 }
 
 local mt = { __index = jlp }
@@ -16,16 +17,18 @@ function JsonListParserFactory:create()
     return obj
 end
 
-function jlp:onElementReady(callback)
+function jlp:registerElementReady(callback)
     self.elementReadyCallback = callback
 end
 
 function jlp:reset()
     self.listFound = false
     self.tmp = nil
+    self.keepReading = true
 end
 
-function jlp:onData(data)
+function jlp:onNextChunk(data)
+    if not self.keepReading then return end
     local dataIdx = 1
     if not self.listFound then
         local listIdx = string.find(data, self.listElementName)
@@ -36,6 +39,7 @@ function jlp:onData(data)
             self.listFound = true
         end
     elseif self.tmp then
+        --print("LEN:" .. string.len(data) .. " - " .. string.len(self.tmp) .. ", RAM: " .. (node.heap() / 1000))
         data = self.tmp .. data
     end
     self.tmp = nil
@@ -43,7 +47,7 @@ function jlp:onData(data)
     local lBracketIdx = -1
     local lBracketCnt = 0
     local rBracketCnt = 0
-    local dataLen = data:len(data)
+    local dataLen = string.len(data)
     local lastDocEnd = -1
     for idx = dataIdx, dataLen, 1 do
         local chr = data:sub(idx, idx)
@@ -60,8 +64,11 @@ function jlp:onData(data)
         if lBracketCnt > 0 and rBracketCnt > 0 and lBracketCnt == rBracketCnt then
             local docTxt = data:sub(lBracketIdx, idx)
             local jobj = json.decode(docTxt)
-            self.elementReadyCallback(jobj)
-
+            self.keepReading = self.elementReadyCallback(jobj)
+            if not self.keepReading then
+                self.reset()
+                return
+            end
             lBracketIdx = -1
             lBracketCnt = 0
             rBracketCnt = 0

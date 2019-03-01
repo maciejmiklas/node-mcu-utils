@@ -1,6 +1,15 @@
 sapi = { uratId = 0, baud = 115200 }
 scmd = {}
 
+
+function sapi.sendError()
+    uart.write(0, "ER\n")
+end
+
+function sapi.sendOK()
+    uart.write(0, "OK\n")
+end
+
 local function onData(data)
     if data == nil then return end
 

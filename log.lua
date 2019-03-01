@@ -1,7 +1,12 @@
 log = {
+    isDebug = true,
     isInfo = true,
     isWarn = true
 }
+
+function log.debug(msg)
+    print("# " .. msg)
+end
 
 function log.info(msg)
     print("## " .. msg)
