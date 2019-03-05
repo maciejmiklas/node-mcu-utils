@@ -41,7 +41,6 @@ function testLocal(location, utcOffset, timeFunction)
 		testCnt = testCnt + 1
 		local _, _, utcSecTxt, expDate, expDls = string.find(line, "(%d+),(.*),(%d)")
 		local utcSec = tonumber(utcSecTxt)
-		local expYear, expMonth, expDay, expHour, expMin, expSec = parseDate(expDate);
 		timeFunction(utcSec, utcOffset)
 		local fromated = format()
 		local summer = (df.summerTime and "Summer" or "Winter")
@@ -49,12 +48,6 @@ function testLocal(location, utcOffset, timeFunction)
 		local msg =  location.." -> "..utcSecTxt.." -> "..expDate.."("..expSummer..") ~= "..fromated.."("..summer..")"
 		assert(fromated == expDate, msg)
 	end
-end
-
-function testEurope(city, utcOffset)
-	local location = "Europe_"..city
-	local timeFunction = function(ts, utcOffset) return df.setEuropeTime(ts, utcOffset) end
-	testLocal(location, utcOffset, timeFunction)
 end
 
 function testAmerica(city, utcOffset)
@@ -65,9 +58,6 @@ end
 
 print("Executing tests....")
 testUTC()
-testEurope("London", 0)
-testEurope("Warsaw", 3600)
-testEurope("Bucharest", 7200)
 testAmerica("Los_Angeles", -28800)
 
 print("Done - Executed "..testCnt.." tests, all OK")
