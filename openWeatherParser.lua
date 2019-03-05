@@ -50,9 +50,9 @@ local function updateForecastText()
         local tempMin = roundTmp(weather.tempMin)
         local tempMax = roundTmp(weather.tempMax)
         if idx > 1 then
-            text = text .. " >> "
+            text = text .. " " .. string.char(3) .. string.char(4) .. " "
         end
-        text = text .. weather.day .. ": ^" .. tempMin .. " !" .. tempMax
+        text = text .. weather.day .. ": " .. string.char(2) .. tempMin .. " " .. string.char(1) .. tempMax
         for dIdx, desc in pairs(weather.description) do
             text = text .. " " .. desc
             if dIdx < weather.codesSize then

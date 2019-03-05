@@ -1,16 +1,18 @@
 require "ntp"
 require "wlan";
+require "scheduler"
+
 
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 ntpc = {
     current = 0, -- Curent UTC time in seconds since 1.1.1970.
     syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
+    syncPeriodRetrySec = 30,
     lastSyncSec = -1, -- Seconds since last response from NTP server.
     syncToleranceSec = 60
 }
 
-local ntp
-local lastReqSec = 0 -- Seconds since last sync request to NTP server
+local ntp, timer
 
 function ntpc.status()
     local status = nil
@@ -27,20 +29,15 @@ local function onNtpResponse(ts)
     ntpc.lastSyncSec = 0
 end
 
-local function execNtpRequest()
-    lastReqSec = 0
-    ntp:requestTime()
-end
-
 -- timer must run every second, because we use it to drive clock.
 local function onTimer()
     ntpc.current = ntpc.current + 1
-    lastReqSec = lastReqSec + 1
-    ntpc.lastSyncSec = ntpc.lastSyncSec + 1
+end
 
-    if lastReqSec == ntpc.syncPeriodSec then
-        wlan.execute(execNtpRequest)
-    end
+local function onScheduler()
+    if log.isInfo then print("Request NTP") end
+    wlan.execute(function() endntp:requestTime() end)
+    ntpc.lastSyncSec = scheduler.uptimeSec()
 end
 
 -- Starts periodical time syncronization with NTC server. It also executes first syncronization
@@ -57,10 +54,11 @@ function ntpc.start(ntpServer)
     end
 
     ntp:onResponse(onNtpResponse)
-    wlan.execute(execNtpRequest)
+
+    scheduler.register(onScheduler, "NTP", ntpc.syncPeriodSec, ntpc.syncPeriodRetrySec)
 
     -- timer must run every second, because we use it to drive clock.
-    local timer = tmr.create()
+    timer = tmr.create()
     timer:register(1000, tmr.ALARM_AUTO, onTimer)
     timer:start()
 end

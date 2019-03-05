@@ -2,6 +2,8 @@ require "credentials"
 require "serialAPI"
 require "serialAPIClock"
 require "serialAPIOpenWeather"
+require "blink"
+require "scheduler"
 
 node.stripdebug(3)
 node.osprint(false)
@@ -64,3 +66,7 @@ ntpc.start("pool.ntp.org")
 
 -- start weather with serial API
 owe_net.start()
+
+blink.start()
+
+scheduler.start()

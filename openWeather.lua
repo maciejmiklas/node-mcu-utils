@@ -2,12 +2,13 @@
 require "wlan";
 require "openWeatherParser"
 require "log"
+require "scheduler"
 
 owe_net = {
     url = "GET /data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
     server = "api.openweathermap.org",
     port = 80,
-    syncPeriodSec = 15, -- sync weather every 20 minutes
+    syncPeriodSec = 30, -- sync weather every 20 minutes
     syncOnErrorPauseSec = 20,
     weather = nil,
     responseCallback = nil,
@@ -38,7 +39,6 @@ local function onReceive(cn, data)
     local status, err = pcall(function() jlp:onNextChunk(data) end)
     if not status then
         log.error("OWE receive: " .. err .. "->" .. tostring(data))
-        owe_net.lastSyncSec = owe_net.syncPeriodSec - owe_net.syncOnErrorPauseSec
         close()
     end
 end
@@ -60,18 +60,12 @@ local function requestWeather()
     con:connect(owe_net.port, owe_net.server)
 end
 
-local function onTimer()
-    if owe_net.lastSyncSec == -1 or owe_net.lastSyncSec >= owe_net.syncPeriodSec then
-        owe_net.lastSyncSec = 0
-       -- collectgarbage()
-        wlan.execute(requestWeather)
-    end
-    owe_net.lastSyncSec = owe_net.lastSyncSec + 1
+local function onScheduler()
+    if log.isInfo then print("Request weather") end
+    wlan.execute(requestWeather)
+    owe_net.lastSyncSec = scheduler.uptimeSec()
 end
 
 function owe_net.start()
-    onTimer()
-    local timer = tmr.create()
-    timer:register(1000, tmr.ALARM_AUTO, onTimer)
-    timer:start()
+    scheduler.register(onScheduler, "weather", owe_net.syncPeriodSec, owe_net.syncOnErrorPauseSec)
 end
