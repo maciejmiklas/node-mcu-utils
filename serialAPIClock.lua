@@ -38,7 +38,3 @@ function scmd.CFD()
     local full = string.format("%04u-%02u-%02u %02u:%02u:%02d\n", df.year, df.month, df.day, df.hour, df.min, df.sec)
     uart.write(0, full)
 end
-
-
-
-

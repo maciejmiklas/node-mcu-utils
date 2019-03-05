@@ -39,15 +39,18 @@ function scmd.GTX()
     local ntpcStat = ntpc.status()
     local oweStat = owe_net.status()
 
-    local text
+    local text = ""
     if ntpcStat == nil and oweStat == nil then
         text = owe_p.forecastText
     else
         collectgarbage()
-        if oweStat == nil then
-            text = owe_p.forecastText
-        else
-            text = oweStat
+
+        if owe_p.forecastText ~= nil then
+            text = owe_p.forecastText .. " >> "
+        end
+
+        if oweStat ~= nil then
+            text = text .. oweStat
         end
         if ntpcStat ~= nil then
             text = " " .. text " " .. ntpcStat
