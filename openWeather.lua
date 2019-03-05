@@ -21,7 +21,7 @@ jlp:registerElementReady(owe_p.onNextDocument)
 
 function owe_net.status()
     local status = nil
-    if owe_net.lastSyncSec == -1 or owe_p.hasWeather == False then
+    if owe_net.lastSyncSec == -1 or owe_p.hasWeather == False or owe_p.forecastText == nil then
         status = "WEATHER ERROR"
     elseif owe_net.lastSyncSec - owe_net.syncToleranceSec > owe_net.syncPeriodSec then
         status = "WEATHER OLD"
@@ -52,7 +52,7 @@ local function onConnection(sck, c)
 end
 
 local function requestWeather()
-    if log.isInfo then log.info("OWE request") end
+    if log.isInfo then log.info("Request weather") end
     close()
     con = net.createConnection(net.TCP)
     con:on("receive", onReceive)
@@ -61,7 +61,6 @@ local function requestWeather()
 end
 
 local function onScheduler()
-    if log.isInfo then print("Request weather") end
     wlan.execute(requestWeather)
     owe_net.lastSyncSec = scheduler.uptimeSec()
 end

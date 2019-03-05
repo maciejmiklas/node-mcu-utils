@@ -39,7 +39,6 @@ function jlp:onNextChunk(data)
             self.listFound = true
         end
     elseif self.tmp then
-        --print("LEN:" .. string.len(data) .. " - " .. string.len(self.tmp) .. ", RAM: " .. (node.heap() / 1000))
         data = self.tmp .. data
     end
     self.tmp = nil

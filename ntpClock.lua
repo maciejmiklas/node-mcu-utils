@@ -35,8 +35,7 @@ local function onTimer()
 end
 
 local function onScheduler()
-    if log.isInfo then print("Request NTP") end
-    wlan.execute(function() endntp:requestTime() end)
+    wlan.execute(function() ntp:requestTime() end)
     ntpc.lastSyncSec = scheduler.uptimeSec()
 end
 

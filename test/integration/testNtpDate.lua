@@ -13,7 +13,7 @@ ntp = NtpFactory:fromDefaultServer()
 local function printTime(ts) 
 	collectgarbage() print("RAM before printTime", node.heap())
 	
-	df.setEuropeTime(ts, 3600)
+	df.setTime(ts, 3600)
 	
 	print("NTP Local Time:", string.format("%04u-%02u-%02u %02u:%02u:%02d", 
 		df.year, df.month, df.day, df.hour, df.min, df.sec))

@@ -23,14 +23,14 @@ end
 --
 -- ts - UTC seconds since 1.1.1970
 -- utcOffset - UTC offset without daylight saving in seconds used to calculate local time from ts.
-function df.setEuropeTime(utcSec, utcOffset)
-    df.setTime(utcSec)
+function df.setTime(utcSec, utcOffset)
+    df.setTimeStamp(utcSec)
     df.utcSec = utcSec
     df.summerTime = isSummerTimeEurope(df)
 
     if df.summerTime then
-        df.setTime(utcSec + utcOffset + 3600)
+        df.setTimeStamp(utcSec + utcOffset + 3600)
     else
-        df.setTime(utcSec + utcOffset)
+        df.setTimeStamp(utcSec + utcOffset)
     end
 end

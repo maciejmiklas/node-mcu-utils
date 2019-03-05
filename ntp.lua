@@ -48,6 +48,7 @@ function ntp:onResponse(responseCallback)
 end
 
 function ntp:requestTime()
+    if log.isInfo then log.info("Request time") end
     self.cn = net.createConnection(net.UDP)
     self.cn:on("receive", function(cn, data) self:response(cn, data) end)
     self.cn:dns(self.server, function(cn, ip) self:dnsResponse(cn, ip) end)

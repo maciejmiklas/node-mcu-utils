@@ -1,3 +1,4 @@
+require "dateformatEurope";
 require "credentials"
 require "serialAPI"
 require "serialAPIClock"
@@ -22,13 +23,13 @@ function scmd.GSS()
     if ntpcStat == nil and oweStat == nil then
         status = "1"
     else
-        status = "RAM:" .. (node.heap() / 1000) .. "kb"
         if ntpcStat ~= nil then
             status = status .. ntpcStat
         end
         if oweStat ~= nil then
             status = status .. " " .. oweStat
         end
+        status = " RAM:" .. (node.heap() / 1000) .. "kb"
     end
     uart.write(0, status)
 end
@@ -42,31 +43,28 @@ function scmd.GTX()
     if ntpcStat == nil and oweStat == nil then
         text = owe_p.forecastText
     else
-        if oweStat ~= nil then
-            text = owe_p.forecastText .. "  ->  "
+        collectgarbage()
+        if oweStat == nil then
+            text = owe_p.forecastText
         else
-            text = oweStat .. ", "
+            text = oweStat
         end
         if ntpcStat ~= nil then
-            text = text .. ntpcStat
+            text = " " .. text " " .. ntpcStat
         end
-        text = text .. ", RAM:" .. (node.heap() / 1000) .. "kb      "
     end
+    text = text .. " >> RAM:" .. (node.heap() / 1000) .. "kb"
+    text = text .. "          "
     uart.write(0, text)
 end
+
+scheduler.register(scmd.GFR, "GFR", 60, 60)
 
 -- network connect
 wlan.setup(cred.ssid, cred.password)
 
--- start serial API by enabling gpio and uart
 sapi.start()
-
--- start NTP synchronization
 ntpc.start("pool.ntp.org")
-
--- start weather with serial API
 owe_net.start()
-
 blink.start()
-
 scheduler.start()

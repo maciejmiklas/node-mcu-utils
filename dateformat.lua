@@ -84,7 +84,7 @@ end
 -- initializes "df" table with curent time stamp
 --
 -- ts - seconds since 1.1.1970
-function df.setTime(ts)
+function df.setTimeStamp(ts)
     local year, offset = getYearOffset(ts)
     local month = 0
     local day = 0

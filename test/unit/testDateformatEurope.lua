@@ -1,5 +1,4 @@
 require "dateformatEurope";
-require "dateformatAmerica";
 
 local testCnt = 0;
 local function parseDate(expDate)
@@ -21,7 +20,7 @@ function testUTC()
 		local _, _, tsStr, expDate = string.find(line, "(%d+),(.*)")
 		local ts = tonumber(tsStr)
 		local expYear, expMonth, expDay, expHour, expMin, expSec = parseDate(expDate);
-		df.setTime(ts)
+		df.setTimeStamp(ts)
 		local fromated = format()
 
 		local msg =  tsStr.." -> "..expDate.." ~= "..fromated
@@ -52,7 +51,7 @@ end
 
 function testEurope(city, utcOffset)
 	local location = "Europe_"..city
-	local timeFunction = function(ts, utcOffset) return df.setEuropeTime(ts, utcOffset) end
+	local timeFunction = function(ts, utcOffset) return df.setTime(ts, utcOffset) end
 	testLocal(location, utcOffset, timeFunction)
 end
 
