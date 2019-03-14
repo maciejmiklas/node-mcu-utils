@@ -73,9 +73,9 @@ local function testParseWholeDocumentAtOnce()
     foundCnt = 1
     testCnt = testCnt + 1
     local data = readFile("test/unit/data/weather.json")
-    local jp = JsonListParserFactory.create()
+    local jp = JsonListParser.new()
     jp:registerElementReady(porcessWeatherPart_a)
-    jp:onNextDocument(data)
+    jp:onNextChunk(data)
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
@@ -83,15 +83,15 @@ end
 local function testParseChunks_a()
     foundCnt = 1
     testCnt = testCnt + 1
-    local jp = JsonListParserFactory.create()
+    local jp = JsonListParser.new()
     jp:registerElementReady(porcessWeatherPart_a)
-    jp:onNextDocument(readFile("test/unit/data/weather_a_001.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_002.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_003.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_004.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_005.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_006.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_a_007.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_001.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_002.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_003.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_004.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_005.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_006.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_a_007.json"))
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
@@ -99,17 +99,17 @@ end
 local function testParseChunks_b()
     foundCnt = 1
     testCnt = testCnt + 1
-    local jp = JsonListParserFactory.create()
+    local jp = JsonListParser.new()
     jp:registerElementReady(porcessWeatherPart_b)
-    jp:onNextDocument(readFile("test/unit/data/weather_b_001.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_002.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_003.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_004.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_005.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_006.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_007.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_008.json"))
-    jp:onNextDocument(readFile("test/unit/data/weather_b_009.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_001.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_002.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_003.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_004.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_005.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_006.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_007.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_008.json"))
+    jp:onNextChunk(readFile("test/unit/data/weather_b_009.json"))
 
     assert(foundCnt == 37, "Found only: " .. foundCnt)
 end

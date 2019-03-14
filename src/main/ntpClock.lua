@@ -9,7 +9,7 @@ ntpc = {
     syncPeriodSec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
     syncPeriodRetrySec = 30,
     lastSyncSec = -1, -- Seconds since last response from NTP server.
-    syncToleranceSec = 60
+    syncToleranceSec = 60,
 }
 
 local ntp, timer

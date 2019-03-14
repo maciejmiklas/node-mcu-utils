@@ -1,5 +1,5 @@
 log = {
-    isDebug = false,
+    isDebug = true,
     isInfo = true,
     isWarn = true
 }

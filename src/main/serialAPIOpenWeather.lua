@@ -9,11 +9,20 @@ local function ready()
     return false
 end
 
-function scmd.WST()
+function scmd.WHW()
     if owe_p.hasWeather then
         sapi.sendOK()
     else
         sapi.sendError()
+    end
+end
+
+function scmd.WST()
+    local status = owe_net.status()
+    if status == nil then
+        sapi.sendOK()
+    else
+        uart.write(sapi.uratId, status .. '\n')
     end
 end
 
@@ -22,7 +31,7 @@ function scmd.WFF()
     if not ready() then
         return
     end
-    uart.write(0, owe_p.forecastText .. '\n')
+    uart.write(sapi.uratId, owe_p.forecastText .. '\n')
 end
 
 function scmd.WFC()
@@ -35,7 +44,7 @@ function scmd.WFC()
         if i > 1 then codesStr = codesStr .. "," end
         codesStr = codesStr .. today.codes[i]
     end
-    uart.write(0, codesStr .. '\n')
+    uart.write(sapi.uratId, codesStr .. '\n')
 end
 
 -- current weather
@@ -46,7 +55,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    uart.write(0, owe_p.current[param] .. '\n')
+    uart.write(sapi.uratId, owe_p.current[param] .. '\n')
 end
 
 

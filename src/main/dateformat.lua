@@ -2,8 +2,7 @@
 --
 -- First you have to create instance by calling one of the dflic methods on "df".
 -- Such instance provides dflic methods and fields dfined in "df" table.
-
-df = {
+DateFormat = {
     year = 1970,
     month = 1, -- range: 1 to 12
     day = 1, -- day of the month, range: 1-31
@@ -13,6 +12,10 @@ df = {
     dayOfWeek = 0, -- range: 1 to 7, starting from sunday
     summerTime = nil -- true for summer time, otherwise winter time. Nil for UTC.
 }
+
+function DateFormat.new()
+    return setmetatable({}, { __index = DateFormat })
+end
 
 local monLengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 
@@ -84,7 +87,7 @@ end
 -- initializes "df" table with curent time stamp
 --
 -- ts - seconds since 1.1.1970
-function df.setTimeStamp(ts)
+function DateFormat:setTimeStamp(ts)
     local year, offset = getYearOffset(ts)
     local month = 0
     local day = 0
@@ -111,15 +114,15 @@ function df.setTimeStamp(ts)
         end
     end
 
-    df.year = year
-    df.month = month + 1
-    df.day = day + 1
-    df.hour = hour
-    df.min = min
-    df.sec = sec
-    df.dayOfWeek = getDayOfWeek(df.year, df.month, df.day)
+    self.year = year
+    self.month = month + 1
+    self.day = day + 1
+    self.hour = hour
+    self.min = min
+    self.sec = sec
+    self.dayOfWeek = getDayOfWeek(self.year, self.month, self.day)
 end
 
-function df.getDayOfWeekUp()
-    return weekDaysUP[df.dayOfWeek]
+function DateFormat:getDayOfWeekUp()
+    return weekDaysUP[self.dayOfWeek]
 end

@@ -9,8 +9,11 @@ owe_p = {
     -- forecast as text for 3 days
     forecastText = nil,
     current = {},
-    hasWeather = false
+    hasWeather = false,
+    utcOffset = 3600
 }
+
+local df = DateFormat.new()
 
 -- forecast by day
 local tmp = {
@@ -186,9 +189,11 @@ function owe_p.onNextDocument(doc)
         return
     end
 
+    df:setTime(doc.dt, owe_p.utcOffset)
+
     local val = {}
     val.date = date
-    val.day = date:sub(6, 10)
+    val.day = df:getDayOfWeekUp()
     val.tempMin = doc.main.temp_min
     val.tempMax = doc.main.temp_max
     val.temp = doc.main.temp

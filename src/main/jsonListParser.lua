@@ -1,8 +1,7 @@
 require "json"
 require "log"
-JsonListParserFactory = {}
 
-local jlp = {
+JsonListParser = {
     elementReadyCallback = nil,
     listElementName = "list",
     listFound = false,
@@ -10,24 +9,21 @@ local jlp = {
     keepReading = true
 }
 
-local mt = { __index = jlp }
-function JsonListParserFactory:create()
-    local obj = {}
-    setmetatable(obj, mt)
-    return obj
+function JsonListParser.new()
+    return setmetatable({}, { __index = JsonListParser })
 end
 
-function jlp:registerElementReady(callback)
+function JsonListParser:registerElementReady(callback)
     self.elementReadyCallback = callback
 end
 
-function jlp:reset()
+function JsonListParser:reset()
     self.listFound = false
     self.tmp = nil
     self.keepReading = true
 end
 
-function jlp:onNextChunk(data)
+function JsonListParser:onNextChunk(data)
     if not self.keepReading then return end
     local dataIdx = 1
     if not self.listFound then

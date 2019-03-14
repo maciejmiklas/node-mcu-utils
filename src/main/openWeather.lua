@@ -8,20 +8,20 @@ owe_net = {
     url = "GET /data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
     server = "api.openweathermap.org",
     port = 80,
-    syncPeriodSec = 30, -- sync weather every 20 minutes
+    syncPeriodSec = 60, -- sync weather every 20 minutes
     syncOnErrorPauseSec = 20,
     weather = nil,
     responseCallback = nil,
     lastSyncSec = -1, -- Seconds since last response from weather server.
-    syncToleranceSec = 60
+    syncToleranceSec = 10
 }
 local con
-local jlp = JsonListParserFactory.create()
+local jlp = JsonListParser.new()
 jlp:registerElementReady(owe_p.onNextDocument)
 
 function owe_net.status()
     local status = nil
-    if owe_net.lastSyncSec == -1 or owe_p.hasWeather == False or owe_p.forecastText == nil then
+    if owe_net.lastSyncSec == -1 or owe_p.hasWeather == false or owe_p.forecastText == nil then
         status = "WEATHER ERROR"
     elseif owe_net.lastSyncSec - owe_net.syncToleranceSec > owe_net.syncPeriodSec then
         status = "WEATHER OLD"
@@ -34,7 +34,7 @@ local function close()
     con = nil
 end
 
-local function onReceive(cn, data)
+local function onReceive(sck, data)
     if log.isDebug then log.debug("OWE frame " .. (string.len(data) / 1000) .. "kb, RAM: " .. (node.heap() / 1000) .. "kb") end
     local status, err = pcall(function() jlp:onNextChunk(data) end)
     if not status then
@@ -52,7 +52,6 @@ local function onConnection(sck, c)
 end
 
 local function requestWeather()
-    if log.isInfo then log.info("Request weather") end
     close()
     con = net.createConnection(net.TCP)
     con:on("receive", onReceive)

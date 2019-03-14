@@ -1,6 +1,6 @@
 require "log"
 
-wlan = { ssid = "SSID not set", timerId = 0 }
+wlan = { ssid = "SSID not set" }
 
 local online = false
 local callbacks = {}
