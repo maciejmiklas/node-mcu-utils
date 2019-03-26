@@ -1,11 +1,16 @@
 wifi.mode(wifi.STATION)
 wifi.start()
-wifi.sta.config({ ssid = 'SOL', pwd = 'lamiglowka' })
+wifi.sta.config({ ssid = 'Herzog-GIO', pwd = 'dolcevita' })
 
 local function test()
     con = net.createConnection(net.TCP)
     con:on("receive", function(cn, data)
-        print(">> " .. (string.len(data) / 1000) .. "kb, RAM: " .. (node.heap() / 1000) .. "kb")
+        print(": " .. (string.len(data) / 1000) .. "kb, RAM: " .. (node.heap() / 1000) .. "kb")
+        text = ""
+        for i = 1, #data do
+            local c = data:sub(i, i)
+            text = c .. text
+        end
     end)
 
     con:on("connection", function(sck, c)

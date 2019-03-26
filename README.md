@@ -1,3 +1,6 @@
+python /home/mmik/dev/opt/nodemcu-firmware-esp32/sdk/esp32-esp-idf/components/esptool_py/esptool/esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 /home/mmik/dev/opt/nodemcu-firmware-esp32/build/bootloader/bootloader.bin 0x10000 /home/mmik/dev/opt/nodemcu-firmware-esp32/build/NodeMCU.bin 0x8000 /home/mmik/dev/opt/nodemcu-firmware-esp32/build/partitions_singleapp.bin
+
+
 This project contains a few utilities for NodeMcu based on ESP8266.
 
 # Date Format

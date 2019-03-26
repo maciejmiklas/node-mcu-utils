@@ -1,4 +1,4 @@
-require "jsonListParser"
+require "json_list_parser"
 
 local foundCnt = 1
 local expectedData_a = {
@@ -47,14 +47,14 @@ local expectedData_a = {
 local testCnt = 0;
 
 
-local function readFile(file)
+local function read_file(file)
     local f = assert(io.open(file, "rb"))
     local content = f:read("*all")
     f:close()
     return content
 end
 
-local function porcessWeatherPart_a(doc)
+local function porcess_weather_part_a(doc)
     if not doc.dt_txt then return end
     local ev = expectedData_a[foundCnt]
     foundCnt = foundCnt + 1
@@ -63,58 +63,58 @@ local function porcessWeatherPart_a(doc)
     assert(doc.main.temp == ev[2], "Error on " .. foundCnt .. " - " .. ev[2])
 end
 
-local function porcessWeatherPart_b(doc)
+local function porcess_weather_part_b(doc)
     if not doc.dt_txt then return end
     local ev = expectedData_a[foundCnt]
     foundCnt = foundCnt + 1
 end
 
-local function testParseWholeDocumentAtOnce()
+local function test_parse_whole_document_at_once()
     foundCnt = 1
     testCnt = testCnt + 1
-    local data = readFile("test/unit/data/weather.json")
+    local data = read_file("test/unit/data/weather.json")
     local jp = JsonListParser.new()
-    jp:registerElementReady(porcessWeatherPart_a)
-    jp:onNextChunk(data)
+    jp:register_element_ready(porcess_weather_part_a)
+    jp:on_next_chunk(data)
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
 
-local function testParseChunks_a()
+local function test_parse_chunks_a()
     foundCnt = 1
     testCnt = testCnt + 1
     local jp = JsonListParser.new()
-    jp:registerElementReady(porcessWeatherPart_a)
-    jp:onNextChunk(readFile("test/unit/data/weather_a_001.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_002.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_003.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_004.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_005.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_006.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_a_007.json"))
+    jp:register_element_ready(porcess_weather_part_a)
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_001.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_002.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_003.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_004.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_005.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_006.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_a_007.json"))
 
     assert(foundCnt == 41, "Found only: " .. foundCnt)
 end
 
-local function testParseChunks_b()
+local function test_parse_chunks_b()
     foundCnt = 1
     testCnt = testCnt + 1
     local jp = JsonListParser.new()
-    jp:registerElementReady(porcessWeatherPart_b)
-    jp:onNextChunk(readFile("test/unit/data/weather_b_001.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_002.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_003.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_004.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_005.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_006.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_007.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_008.json"))
-    jp:onNextChunk(readFile("test/unit/data/weather_b_009.json"))
+    jp:register_element_ready(porcess_weather_part_b)
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_001.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_002.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_003.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_004.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_005.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_006.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_007.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_008.json"))
+    jp:on_next_chunk(read_file("test/unit/data/weather_b_009.json"))
 
     assert(foundCnt == 37, "Found only: " .. foundCnt)
 end
 
-testParseWholeDocumentAtOnce()
-testParseChunks_a()
-testParseChunks_b()
+test_parse_whole_document_at_once()
+test_parse_chunks_a()
+test_parse_chunks_b()
 print("Done - Executed " .. testCnt .. " tests, all OK")

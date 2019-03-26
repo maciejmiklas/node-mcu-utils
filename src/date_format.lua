@@ -9,8 +9,8 @@ DateFormat = {
     hour = 0, -- range: 0 to 23
     min = 0, -- range: 1 to 60
     sec = 0, -- range: 1 to 60
-    dayOfWeek = 0, -- range: 1 to 7, starting from sunday
-    summerTime = nil -- true for summer time, otherwise winter time. Nil for UTC.
+    day_off_week = 0, -- range: 1 to 7, starting from sunday
+    summer_time = nil -- true for summer time, otherwise winter time. Nil for UTC.
 }
 
 function DateFormat.new()
@@ -27,7 +27,7 @@ local function idiv(n, d)
     return math.floor(n / d)
 end
 
-local function isYearLeap(y)
+local function is_year_leap(y)
     if (y % 4) ~= 0 then
         return false
     elseif (y % 100) ~= 0 then
@@ -37,19 +37,19 @@ local function isYearLeap(y)
     end
 end
 
-local function getYearLength(y)
-    return isYearLeap(y) and 366 or 365
+local function get_year_length(y)
+    return is_year_leap(y) and 366 or 365
 end
 
-local function getMonthLength(m, y)
+local function get_month_length(m, y)
     if m == 2 then
-        return isYearLeap(y) and 29 or 28
+        return is_year_leap(y) and 29 or 28
     else
         return monLengths[m]
     end
 end
 
-local function isYearsLeapSince(year)
+local function is_years_leap_since(year)
     return idiv(year, 4) - idiv(year, 100) + idiv(year, 400)
 end
 
@@ -62,14 +62,14 @@ local function carry(tens, units, base)
 end
 
 -- range: 1 to 7, starting from sunday
-local function getDayOfWeek(year, month, day)
+local function get_day_of_week(year, month, day)
     if month < 3 then
         year = year - 1
     end
-    return (year + isYearsLeapSince(year) + sakamoto[month] + day) % 7 + 1
+    return (year + is_years_leap_since(year) + sakamoto[month] + day) % 7 + 1
 end
 
-local function getYearOffset(ts)
+local function get_year_offset(ts)
     local year, offset
 
     if ts >= 1577836800 then
@@ -87,8 +87,8 @@ end
 -- initializes "df" table with curent time stamp
 --
 -- ts - seconds since 1.1.1970
-function DateFormat:setTimeStamp(ts)
-    local year, offset = getYearOffset(ts)
+function DateFormat:set_time_stamp(ts)
+    local year, offset = get_year_offset(ts)
     local month = 0
     local day = 0
     local hour = 0
@@ -104,9 +104,9 @@ function DateFormat:setTimeStamp(ts)
     local rounds = 0
     while true do
         rounds = rounds + 1
-        local monthLength = getMonthLength(month + 1, year)
-        if day < monthLength then break end
-        day = day - monthLength
+        local month_length = get_month_length(month + 1, year)
+        if day < month_length then break end
+        day = day - month_length
         month = month + 1
         if month >= 12 then
             month = 0
@@ -120,9 +120,9 @@ function DateFormat:setTimeStamp(ts)
     self.hour = hour
     self.min = min
     self.sec = sec
-    self.dayOfWeek = getDayOfWeek(self.year, self.month, self.day)
+    self.day_off_week = get_day_of_week(self.year, self.month, self.day)
 end
 
-function DateFormat:getDayOfWeekUp()
-    return weekDaysUP[self.dayOfWeek]
+function DateFormat:get_day_of_week_up()
+    return weekDaysUP[self.day_off_week]
 end

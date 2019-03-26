@@ -1,34 +1,34 @@
-require "jsonListParser"
+require "json_list_parser"
 
 -- parser api
 owe_p = {
-    forecastDays = 3,
+    forecast_days = 3,
     -- forecast for next 3 days. Contains only weather for the day from 6:00 to 21:00.
     -- Forecast for the first day reflects weather for current day, and if it's a night for a next day.
     forecast = {},
     -- forecast as text for 3 days
-    forecastText = nil,
+    forecast_text = nil,
     current = {},
-    hasWeather = false,
-    utcOffset = 3600
+    has_weather = false,
+    utc_offset = 3600
 }
 
 local df = DateFormat.new()
 
 -- forecast by day
 local tmp = {
-    dayForecast = {},
-    dayForecastIdx = 1,
+    day_forecast = {},
+    day_forecast_idx = 1,
     forecast = {}
 }
 
 local function reset()
-    tmp.dayForecast = {}
-    tmp.dayForecastIdx = 1
+    tmp.day_forecast = {}
+    tmp.day_forecast_idx = 1
     tmp.forecast = {}
 end
 
-function owe_p.onDataStart()
+function owe_p.on_data_start()
     reset()
 end
 
@@ -36,47 +36,47 @@ function roundTmp(val)
     return math.floor(val * 10 + 0.5) / 10
 end
 
-local function updateCurrent()
+local function update_current()
     local today = owe_p.forecast[1]
-    local codesStr = ""
-    for i = 1, today.codesSize do
-        if i > 1 then codesStr = codesStr .. "," end
-        codesStr = codesStr .. today.codes[i]
+    local codes_str = ""
+    for i = 1, today.codes_size do
+        if i > 1 then codes_str = codes_str .. "," end
+        codes_str = codes_str .. today.codes[i]
     end
-    owe_p.current.icons = codesStr
+    owe_p.current.icons = codes_str
     owe_p.current.temp = owe_p.forecast[1].temp
 end
 
-local function updateForecastText()
+local function update_forecast_text()
     local text = ""
     for idx, weather in pairs(owe_p.forecast) do
-        local tempMin = roundTmp(weather.tempMin)
-        local tempMax = roundTmp(weather.tempMax)
+        local temp_min = roundTmp(weather.temp_min)
+        local temp_max = roundTmp(weather.temp_max)
         if idx > 1 then
             text = text .. " " .. string.char(3) .. string.char(4) .. " "
         end
-        text = text .. weather.day .. ": " .. string.char(2) .. tempMin .. " " .. string.char(1) .. tempMax
+        text = text .. weather.day .. ": " .. string.char(2) .. temp_min .. " " .. string.char(1) .. temp_max
         for dIdx, desc in pairs(weather.description) do
             text = text .. " " .. desc
-            if dIdx < weather.codesSize then
+            if dIdx < weather.codes_size then
                 text = text .. ","
             end
         end
     end
-    owe_p.forecastText = text
+    owe_p.forecast_text = text
 end
 
-local function onDataEnd()
-    if log.isInfo then log.info("Got weather") end
+local function on_data_end()
+    if log.is_info then log.info("OWEP Got weather") end
     owe_p.forecast = tmp.forecast
-    updateCurrent()
-    updateForecastText()
-    owe_p.hasWeather = true
+    update_current()
+    update_forecast_text()
+    owe_p.has_weather = true
     reset()
 end
 
 --https://openweathermap.org/weather-conditions
-local function mapCode(condition)
+local function map_code(condition)
     local mapped = 0
 
     -- ICON_IDX_MIX_SUN_RAIN
@@ -132,73 +132,73 @@ local function contains(tab, val)
     return false
 end
 
-local function calculateDateRange(data)
+local function calculate_date_range(data)
     local el = {}
-    el.tempMin = 1000
-    el.tempMax = -1000
+    el.temp_min = 1000
+    el.temp_max = -1000
     el.description = {}
     el.codes = {}
-    el.codesSize = 0
+    el.codes_size = 0
     el.day = data.day
 
     for idx, weather in pairs(data.el) do
         if idx == 1 then
             el.temp = weather.temp
         end
-        el.tempMin = math.min(el.tempMin, weather.tempMin)
-        el.tempMax = math.max(el.tempMax, weather.tempMax)
+        el.temp_min = math.min(el.temp_min, weather.temp_min)
+        el.temp_max = math.max(el.temp_max, weather.temp_max)
         if not contains(el.description, weather.description) then
             table.insert(el.description, weather.description)
-            table.insert(el.codes, mapCode(weather.id))
-            el.codesSize = el.codesSize + 1
+            table.insert(el.codes, map_code(weather.id))
+            el.codes_size = el.codes_size + 1
         end
     end
-    tmp.forecast[tmp.dayForecastIdx] = el
+    tmp.forecast[tmp.day_forecast_idx] = el
 end
 
-local function nextDocument(el)
-    if tmp.dayForecast.day == nil or tmp.dayForecast.day ~= el.day then
-        if tmp.dayForecast.day then
-            calculateDateRange(tmp.dayForecast)
-            if tmp.dayForecastIdx == owe_p.forecastDays then
-                onDataEnd()
+local function next_document(el)
+    if tmp.day_forecast.day == nil or tmp.day_forecast.day ~= el.day then
+        if tmp.day_forecast.day then
+            calculate_date_range(tmp.day_forecast)
+            if tmp.day_forecast_idx == owe_p.forecast_days then
+                on_data_end()
                 return false
             end
-            tmp.dayForecastIdx = tmp.dayForecastIdx + 1
+            tmp.day_forecast_idx = tmp.day_forecast_idx + 1
         end
-        tmp.dayForecast.day = el.day
-        tmp.dayForecast.el = {}
+        tmp.day_forecast.day = el.day
+        tmp.day_forecast.el = {}
     end
-    table.insert(tmp.dayForecast.el, el)
+    table.insert(tmp.day_forecast.el, el)
     return true
 end
 
-local function acceptTime(date)
+local function accept_time(date)
     local hourStr = date:sub(12, 13)
     local hour = tonumber(hourStr)
     return hour >= 6 and hour <= 21
 end
 
-function owe_p.onNextDocument(doc)
-    if tmp.dayForecastIdx == owe_p.forecastDays + 1 then
-        return
+function owe_p.on_next_document(doc)
+    if tmp.day_forecast_idx == owe_p.forecast_days + 1 then
+        return false
     end
     if not doc.dt_txt then return end
     local date = doc.dt_txt
-    if not acceptTime(date) then
-        return
+    if not accept_time(date) then
+        return true
     end
 
-    df:setTime(doc.dt, owe_p.utcOffset)
+    df:set_time(doc.dt, owe_p.utc_offset)
 
     local val = {}
     val.date = date
-    val.day = df:getDayOfWeekUp()
-    val.tempMin = doc.main.temp_min
-    val.tempMax = doc.main.temp_max
+    val.day = df:get_day_of_week_up()
+    val.temp_min = doc.main.temp_min
+    val.temp_max = doc.main.temp_max
     val.temp = doc.main.temp
     local dw = doc.weather[1]
     val.description = dw.description
     val.id = dw.id
-    nextDocument(val)
+    return next_document(val)
 end

@@ -1,4 +1,4 @@
-require "dateformatAmerica";
+require "date_format_america";
 
 local testCnt = 0;
 local function parseDate(expDate)
@@ -14,18 +14,18 @@ function format(df)
 		df.day, df.hour, df.min, df.sec)
 end
 
-function testUTC(df)
+function test_utc(df)
 	for line in io.lines("test/unit/data/datesUTC.csv") do
 		testCnt = testCnt + 1
 		local _, _, tsStr, expDate = string.find(line, "(%d+),(.*)")
 		local ts = tonumber(tsStr)
 		local expYear, expMonth, expDay, expHour, expMin, expSec = parseDate(expDate);
-		df:setTimeStamp(ts)
+		df:set_time_stamp(ts)
 		local fromated = format(df)
 
 		local msg =  tsStr.." -> "..expDate.." ~= "..fromated
 		assert(fromated == expDate, msg)
-		assert(df.summerTime == nil, msg)
+		assert(df.summer_time == nil, msg)
 		assert(df.year == expYear, msg)
 		assert(df.month == expMonth, msg)
 		assert(df.day == expDay, msg)
@@ -35,29 +35,29 @@ function testUTC(df)
 	end
 end
 
-function testLocal(df, location, utcOffset, timeFunction)
+function test_local(df, location, utc_offset, timeFunction)
 	for line in io.lines("test/unit/data/dates"..location..".csv") do
 		testCnt = testCnt + 1
 		local _, _, utcSecTxt, expDate, expDls = string.find(line, "(%d+),(.*),(%d)")
 		local utcSec = tonumber(utcSecTxt)
-		timeFunction(df, utcSec, utcOffset)
+		timeFunction(df, utcSec, utc_offset)
 		local fromated = format(df)
-		local summer = (df.summerTime and "Summer" or "Winter")
+		local summer = (df.summer_time and "Summer" or "Winter")
 		local expSummer = (expDls == "1" and "Summer" or "Winter")
 		local msg =  location.." -> "..utcSecTxt.." -> "..expDate.."("..expSummer..") ~= "..fromated.."("..summer..")"
 		assert(fromated == expDate, msg)
 	end
 end
 
-function testAmerica(df, city, utcOffset)
+function test_america(df, city, utc_offset)
 	local location = "America_"..city
-	local dateFactory = function(df, ts, utcOffset) return df:setTime(ts, utcOffset) end
-	testLocal(df, location, utcOffset, dateFactory)
+	local dateFactory = function(df, ts, utc_offset) return df:set_time(ts, utc_offset) end
+	test_local(df, location, utc_offset, dateFactory)
 end
 
 print("Executing tests....")
 df = DateFormat.new()
-testUTC(df)
-testAmerica(df, "Los_Angeles", -28800)
+test_utc(df)
+test_america(df, "Los_Angeles", -28800)
 
 print("Done - Executed "..testCnt.." tests, all OK")
