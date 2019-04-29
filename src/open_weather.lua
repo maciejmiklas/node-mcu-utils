@@ -6,12 +6,12 @@ require "scheduler"
 
 owe_net = {
     url = "http://api.openweathermap.org/data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
-    sync_period_sec = 60, -- sync weather every 20 minutes
-    sync_on_error_pause_sec = 20,
+    sync_period_sec = 1200, -- sync weather every 20 minutes
+    sync_on_error_pause_sec = 180,
     weather = nil,
     response_callback = nil,
     last_sync_sec = -1, -- Seconds since last response from weather server.
-    sync_tolerance_sec = 10
+    sync_tolerance_sec = 120
 }
 local con
 local jlp = JsonListParser.new()

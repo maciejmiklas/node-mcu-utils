@@ -7,9 +7,9 @@ require "scheduler"
 
 function scmd.GFR()
     collectgarbage()
-    uart.write(sapi.urat_id, "RAM: ")
-    uart.write(sapi.urat_id, tostring(node.heap() / 1000))
-    uart.write(sapi.urat_id, '\n')
+    uart.write(sapi.uart_id, "RAM: ")
+    uart.write(sapi.uart_id, tostring(node.heap() / 1000))
+    uart.write(sapi.uart_id, '\n')
 end
 
 local change = {
@@ -21,6 +21,7 @@ local change = {
     last_gtc_call = -1
 }
 
+-- set debug level
 function scmd.GDL(level)
     if level == '0' then
         log.setup(false, false, false, false)
@@ -55,7 +56,7 @@ function scmd.GSS()
         end
         status = status .. "; RAM:" .. (node.heap() / 1000) .. "kb"
     end
-    uart.write(sapi.urat_id, status)
+    uart.write(sapi.uart_id, status)
 end
 
 -- return 1 if the text has been changed since last call, otherwise 0
@@ -65,12 +66,12 @@ function scmd.GTC()
         changed = "0"
     end
     change.last_gtc_call = change.update_count
-    uart.write(sapi.urat_id, changed)
+    uart.write(sapi.uart_id, changed)
 end
 
 -- scrolling text for arduino
 function scmd.GTX()
-    uart.write(sapi.urat_id, change.text)
+    uart.write(sapi.uart_id, change.text)
 end
 
 local function generate_weather_text(ntpc_stat, owe_stat)
@@ -95,7 +96,7 @@ local function generate_weather_text(ntpc_stat, owe_stat)
     return text
 end
 
-local function update_wehater_text()
+local function update_weather_text()
     local ntpc_stat = ntpc.status()
     local owe_stat = owe_net.status()
     local last_weather_sync_sec = owe_net.last_sync_sec
@@ -116,9 +117,10 @@ local function print_stuff()
     scmd.GFR()
     scmd.WFF()
     scmd.CFD()
+    scmd.WCW("temp")
 end
 
-scheduler.register(update_wehater_text, "update_wehater_text", 1, 1)
+scheduler.register(update_weather_text, "update_wehater_text", 1, 1)
 scheduler.register(print_stuff, "print_stuff", 60, 60)
 
 

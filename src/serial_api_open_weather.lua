@@ -2,7 +2,7 @@ require "open_weather";
 require "serial_api";
 
 local function ready()
-    if owe_p.has_weather then
+    if owe_net.status() == nil then
         return true
     end
     sapi.send_error()
@@ -22,7 +22,7 @@ function scmd.WST()
     if status == nil then
         sapi.send_ok()
     else
-        uart.write(sapi.urat_id, status .. '\n')
+        uart.write(sapi.uart_id, status .. '\n')
     end
 end
 
@@ -31,7 +31,7 @@ function scmd.WFF()
     if not ready() then
         return
     end
-    uart.write(sapi.urat_id, owe_p.forecast_text .. '\n')
+    uart.write(sapi.uart_id, owe_p.forecast_text .. '\n')
 end
 
 -- forecast codes
@@ -45,7 +45,7 @@ function scmd.WFC()
         if i > 1 then codes_str = codes_str .. "," end
         codes_str = codes_str .. today.codes[i]
     end
-    uart.write(sapi.urat_id, codes_str .. '\n')
+    uart.write(sapi.uart_id, codes_str .. '\n')
 end
 
 -- current weather
@@ -56,7 +56,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    uart.write(sapi.urat_id, owe_p.current[param] .. '\n')
+    uart.write(sapi.uart_id, owe_p.current[param] .. '\n')
 end
 
 

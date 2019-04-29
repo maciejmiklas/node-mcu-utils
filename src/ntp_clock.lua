@@ -7,9 +7,9 @@ require "scheduler"
 ntpc = {
     current = 0, -- Curent UTC time in seconds since 1.1.1970.
     sync_period_sec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
-    syncPeriodRetrySec = 30,
+    syncPeriodRetrySec = 120,
     last_sync_sec = -1, -- Seconds since last response from NTP server.
-    sync_tolerance_sec = 60,
+    sync_tolerance_sec = 120,
 }
 
 local ntp, timer
