@@ -1,5 +1,6 @@
+--TODO change log level over uart 0
 log = {
-    is_debug = true,
+    is_debug = false,
     is_info = true,
     is_warn = true,
     is_error = true,
@@ -15,9 +16,9 @@ local function ln(pref, arg)
 end
 
 function log.debug(...)
-    if log.is_debug then
+  --  if log.is_debug then
         ln("#D ", arg)
-    end
+ --   end
 end
 
 function log.info(...)

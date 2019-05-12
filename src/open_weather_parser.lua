@@ -32,32 +32,40 @@ function owe_p.on_data_start()
     reset()
 end
 
-function roundTmp(val)
-    return math.floor(val * 10 + 0.5) / 10
+function round(num, numDecimalPlaces)
+    local mult = 10 ^ (numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
 end
 
 local function update_current()
     local today = owe_p.forecast[1]
     local codes_str = ""
     for i = 1, today.codes_size do
-        if i > 1 then codes_str = codes_str .. "," end
+        if i > 1 then
+            codes_str = codes_str .. ","
+        end
         codes_str = codes_str .. today.codes[i]
     end
     owe_p.current.icons = codes_str
-    owe_p.current.temp = owe_p.forecast[1].temp
+    local currentTemp = owe_p.forecast[1].temp
+    if currentTemp < 0 then
+        owe_p.current.temp = round()
+    else
+        owe_p.current.temp = round(currentTemp,1)
+    end
 end
 
 local function update_forecast_text()
     local text = ""
     for idx, weather in pairs(owe_p.forecast) do
-        local temp_min = roundTmp(weather.temp_min)
-        local temp_max = roundTmp(weather.temp_max)
+        local temp_min = round(weather.temp_min)
+        local temp_max = round(weather.temp_max)
         if idx > 1 then
             text = text .. " " .. string.char(3) .. string.char(4) .. " "
         end
-        text = text .. weather.day .. ": " .. string.char(2) .. temp_min .. " " .. string.char(1) .. temp_max
+        text = text .. weather.day .. ":" .. string.char(2) .. temp_min .. " " .. string.char(1) .. temp_max .. " "
         for dIdx, desc in pairs(weather.description) do
-            text = text .. " " .. desc
+            text = text .. desc
             if dIdx < weather.codes_size then
                 text = text .. ","
             end
@@ -67,7 +75,9 @@ local function update_forecast_text()
 end
 
 local function on_data_end()
-    if log.is_info then log.info("OWEP Got weather") end
+    if log.is_info then
+        log.info("OWE Got weather")
+    end
     owe_p.forecast = tmp.forecast
     update_current()
     update_forecast_text()
@@ -183,7 +193,9 @@ function owe_p.on_next_document(doc)
     if tmp.day_forecast_idx == owe_p.forecast_days + 1 then
         return false
     end
-    if not doc.dt_txt then return end
+    if not doc.dt_txt then
+        return
+    end
     local date = doc.dt_txt
     if not accept_time(date) then
         return true

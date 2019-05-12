@@ -22,7 +22,7 @@ function scmd.WST()
     if status == nil then
         sapi.send_ok()
     else
-        uart.write(sapi.uart_id, status .. '\n')
+        sapi.send(status)
     end
 end
 
@@ -31,7 +31,7 @@ function scmd.WFF()
     if not ready() then
         return
     end
-    uart.write(sapi.uart_id, owe_p.forecast_text .. '\n')
+    sapi.send(owe_p.forecast_text)
 end
 
 -- forecast codes
@@ -42,10 +42,12 @@ function scmd.WFC()
     local today = owe_p.forecast[1]
     local codes_str = ""
     for i = 1, today.codes_size do
-        if i > 1 then codes_str = codes_str .. "," end
+        if i > 1 then
+            codes_str = codes_str .. ","
+        end
         codes_str = codes_str .. today.codes[i]
     end
-    uart.write(sapi.uart_id, codes_str .. '\n')
+    sapi.send(codes_str)
 end
 
 -- current weather
@@ -56,7 +58,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    uart.write(sapi.uart_id, owe_p.current[param] .. '\n')
+    sapi.send(owe_p.current[param])
 end
 
 
