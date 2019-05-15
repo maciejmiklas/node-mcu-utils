@@ -51,7 +51,7 @@ local function update_current()
     if currentTemp < 0 then
         owe_p.current.temp = round()
     else
-        owe_p.current.temp = round(currentTemp,1)
+        owe_p.current.temp = round(currentTemp, 1)
     end
 end
 
@@ -159,8 +159,11 @@ local function calculate_date_range(data)
         el.temp_max = math.max(el.temp_max, weather.temp_max)
         if not contains(el.description, weather.description) then
             table.insert(el.description, weather.description)
-            table.insert(el.codes, map_code(weather.id))
-            el.codes_size = el.codes_size + 1
+            local code = map_code(weather.id)
+            if el.codes_size == 0 or (el.codes_size > 0 and el.codes[el.codes_size] ~= code) then
+                table.insert(el.codes, code)
+                el.codes_size = el.codes_size + 1
+            end
         end
     end
     tmp.forecast[tmp.day_forecast_idx] = el

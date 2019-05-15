@@ -34,29 +34,28 @@ local function on_data(data)
     end
     local data_len = string.len(data);
     if data_len < 3 then
-       -- if log.is_debug then
+        if log.is_debug then
             log.debug("SP LEN ERR: '", data, "', Len:", data_len)
-        --end
+        end
         return
     end
 
     local status, err
-    -- static command has 3 characters + \t
-    if data_len <= 4 then
-        local cmd = string.sub(data, 1, 3)
-       -- if log.is_debug then
-            log.debug("SP<-(", data_len, ")-", cmd)
-      --  end
-        status, err = pcall(scmd[cmd])
-
-        -- dynamic command has following format: [3 chars command][space][param]
-    else
+    -- dynamic command has following format: [3 chars command][space][param]
+    if string.sub(data, 4, 4) == ' ' then
         local cmd = string.sub(data, 1, 3)
         local param = string.sub(data, 4, data_len):gsub('%W', '')
-      --  if log.is_debug then
+        if log.is_debug then
             log.debug("SP<-(", data_len, ")-", cmd, "(", param, ")")
-      --  end
+        end
         status, err = pcall(scmd[cmd], param)
+    else
+        -- static command has 3 characters + \t
+        local cmd = string.sub(data, 1, 3)
+        if log.is_debug then
+            log.debug("SP<-(", data_len, ")-", cmd)
+        end
+        status, err = pcall(scmd[cmd])
     end
 
     if status ~= true then
@@ -66,7 +65,11 @@ local function on_data(data)
 end
 
 function sapi.start()
-    uart.setup(sapi.uart_id, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1, sapi.pins)
+    if sapi.uart_id == 0 then
+        uart.setup(sapi.uart_id, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1)
+    else
+        uart.setup(sapi.uart_id, sapi.baud, 8, uart.PARITY_NONE, uart.STOPBITS_1, sapi.pins)
+    end
     uart.on(sapi.uart_id, "data", '\r', on_data)
     uart.on(sapi.uart_id, "error", on_error)
     uart.setmode(sapi.uart_id, uart.MODE_UART)
