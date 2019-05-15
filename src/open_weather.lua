@@ -4,24 +4,41 @@ require "open_weather_parser"
 require "log"
 require "scheduler"
 
-owe_net = {
-    url = "http://api.openweathermap.org/data/2.5/forecast?id=3081368&appid=3afb55b99aafbe3310545e4ced598754&units=metric",
+owe = {
+    appid = "XYZ",
+    url = "http://api.openweathermap.org/data/2.5/forecast?id=3081368&units=metric&appid=",
     sync_period_sec = 1200, -- sync weather every 20 minutes
     sync_on_error_pause_sec = 180,
     weather = nil,
-    response_callback = nil,
     last_sync_sec = -1, -- Seconds since last response from weather server.
-    sync_tolerance_sec = 120
+    sync_tolerance_sec = 120,
+    utc_offset = 3600,
+    response_callback = nil
 }
 local con
 local jlp = JsonListParser.new()
-jlp:register_element_ready(owe_p.on_next_document)
 
-function owe_net.status()
+function owe.forecast(param)
+    return owe_p.forecast[param]
+end
+
+function owe.forecast_text()
+    return owe_p.forecast_text
+end
+
+function owe.current(param)
+    return owe_p.current[param]
+end
+
+function owe.has_weather()
+    return owe_p.has_weather
+end
+
+function owe.status()
     local status = nil
-    if owe_net.last_sync_sec == -1 or owe_p.has_weather == false or owe_p.forecast_text == nil then
+    if owe.last_sync_sec == -1 or owe_p.has_weather == false or owe_p.forecast_text == nil then
         status = "WEATHER ERROR"
-    elseif scheduler.uptime_sec() - owe_net.last_sync_sec > owe_net.sync_period_sec + owe_net.sync_tolerance_sec then
+    elseif scheduler.uptime_sec() - owe.last_sync_sec > owe.sync_period_sec + owe.sync_tolerance_sec then
         status = "WEATHER OLD"
     end
     return status;
@@ -43,6 +60,9 @@ local function on_data(status_code, data)
         if not response then
             if log.is_debug then log.debug("OWE request parsed") end
             close()
+            if owe.response_callback ~= nil then
+                owe.response_callback()
+            end
         end
     else
         if log.is_error then log.error("OWE callback: ", response, "->", data) end
@@ -57,15 +77,15 @@ local function on_connect()
 end
 
 local function request_weather()
-    if log.is_info then log.info("OWE Request werather") end
+    if log.is_info then log.info("OWE Request weather") end
     if con == nil then
         headers = {
             Connection = "close"
         }
-        con = http.createConnection(owe_net.url, http.GET, { headers = headers, async = true })
+        con = http.createConnection(owe.url..owe.appid, http.GET, { headers = headers, async = true })
         con:on("data", on_data)
         con:on("connect", on_connect)
-        con:on("complete", function() owe_net.last_sync_sec = scheduler.uptime_sec() end)
+        con:on("complete", function() owe.last_sync_sec = scheduler.uptime_sec() end)
     end
     con:close()
     con:request()
@@ -75,6 +95,8 @@ local function on_scheduler()
     wlan.execute(request_weather)
 end
 
-function owe_net.start()
-    scheduler.register(on_scheduler, "weather", owe_net.sync_period_sec, owe_net.sync_on_error_pause_sec)
+function owe.start()
+    jlp:register_element_ready(owe_p.on_next_document)
+    owe_p.utc_offset = owe.utc_offset
+    scheduler.register(on_scheduler, "weather", owe.sync_period_sec, owe.sync_on_error_pause_sec)
 end

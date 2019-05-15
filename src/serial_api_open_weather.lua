@@ -2,7 +2,7 @@ require "open_weather";
 require "serial_api";
 
 local function ready()
-    if owe_net.status() == nil then
+    if owe.status() == nil then
         return true
     end
     sapi.send_error()
@@ -10,7 +10,7 @@ local function ready()
 end
 
 function scmd.WHW()
-    if owe_p.has_weather then
+    if owe.has_weather() then
         sapi.send_ok()
     else
         sapi.send_error()
@@ -18,7 +18,7 @@ function scmd.WHW()
 end
 
 function scmd.WST()
-    local status = owe_net.status()
+    local status = owe.status()
     if status == nil then
         sapi.send_ok()
     else
@@ -31,7 +31,7 @@ function scmd.WFF()
     if not ready() then
         return
     end
-    sapi.send(owe_p.forecast_text)
+    sapi.send(owe.forecast_text())
 end
 
 -- forecast codes
@@ -39,7 +39,7 @@ function scmd.WFC()
     if not ready() then
         return
     end
-    local today = owe_p.forecast[1]
+    local today = owe.forecast(1)
     local codes_str = ""
     for i = 1, today.codes_size do
         if i > 1 then
@@ -58,7 +58,7 @@ function scmd.WCW(param)
     if ready() == false then
         return
     end
-    sapi.send(owe_p.current[param])
+    sapi.send(owe.current(param))
 end
 
 

@@ -41,7 +41,7 @@ end
 -- return short status for all modules.
 function scmd.GSS()
     local ntpc_stat = ntpc.status()
-    local owe_stat = owe_net.status()
+    local owe_stat = owe.status()
     local status = ""
     if ntpc_stat == nil and owe_stat == nil then
         status = "OK"
@@ -80,11 +80,12 @@ end
 local function generate_weather_text(ntpc_stat, owe_stat)
     local text = ""
     if ntpc_stat == nil and owe_stat == nil then
-        text = owe_p.forecast_text .. "          "
+        text = owe.forecast_text() .. "          "
     else
-        collectgarbage()
-        if owe_p.forecast_text ~= nil and owe_p.forecast_text:len() > 0 then
-            text = owe_p.forecast_text .. " >> "
+
+        local ft = owe.forecast_text()
+        if ft ~= nil and ft:len() > 0 then
+            text = ft .. " >> "
         end
 
         if owe_stat ~= nil then
@@ -104,8 +105,8 @@ end
 
 local function update_weather_text()
     local ntpc_stat = ntpc.status()
-    local owe_stat = owe_net.status()
-    local last_weather_sync_sec = owe_net.last_sync_sec
+    local owe_stat = owe.status()
+    local last_weather_sync_sec = owe.last_sync_sec
 
     if gtc_buf.last_weather_sync_sec == last_weather_sync_sec and gtc_buf.ntpc_stat == ntpc_stat and gtc_buf.owe_stat == owe_stat then
         return
@@ -134,6 +135,6 @@ scheduler.register(update_weather_text, "update_wehater_text", 60, 10)
 wlan.setup(cred.ssid, cred.password)
 sapi.start()
 ntpc.start("pool.ntp.org")
-owe_net.start()
+owe.start()
 blink.start()
 scheduler.start()
