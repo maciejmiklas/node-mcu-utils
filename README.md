@@ -5,7 +5,7 @@ This project contains a few utilities for NodeMcu based on ESP32.
 # Logger
 Different log levels can be specified in *log.lua*, including the UART Port.
 
-#Serial Port
+# Serial Port
 Serial port fol logger can be changed in *log.lua -> log.uart_id*. Port for communication is in *serial_api.lua -> sapi.uart_id*
 
 # Date Format
@@ -252,7 +252,7 @@ THU
 
 # weather description for 3 days
 >WFF
-THU:9 16 overcast clouds,scattered clouds,few cloudsbroken clouds  FRI:11 20 overcast clouds,broken clouds,light rainclear sky  SAT:15 23 few clouds,clear sky
+THU: min:9 max:16 overcast clouds,scattered clouds,few cloudsbroken clouds   FRI: min:11 max:20 overcast clouds,broken clouds,light rainclear sky  SAT: min:15 max:23 few clouds,clear sky
 ```
 
 # Firmware
