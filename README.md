@@ -1,7 +1,12 @@
-This project contains a few utilities for NodeMcu based on ESP32.
+This project contains a few utilities for NodeMcu based on ESP32. 
+
+[Here you will find branch for ESP8266](https://github.com/maciejmiklas/NodeMCUUtils/tree/esp8266)
 
 # Logger
 Different log levels can be specified in *log.lua*, including the UART Port.
+
+#Serial Port
+Serial port fol logger can be changed in *log.lua -> log.uart_id*. Port for communication is in *serial_api.lua -> sapi.uart_id*
 
 # Date Format
 Provides functionality to get local date and time from timestamp given in seconds since 1970.01.01
@@ -139,7 +144,9 @@ Day of Week:    4
 
 # Open Weather
 This script provides access to [Open Weather](https://openweathermap.org), you have to register to get your application id. 
-*owe.start()* will obtain weather immediately and keep refreshing it every *owe.sync_period_sec* seconds. 
+*owe.start()* will obtain weather immediately and keep refreshing it every *owe.sync_period_sec* second.
+
+Open Weather delivers lots of info in forecast. *open_weather_parser.lua* reduces it to 3 next days, without nights. 
 
 ```lua
 require "open_weather.lua"
@@ -171,7 +178,7 @@ Weather for tomorrow: MON 16 25  Partly Cloudy
 ```
 
 # Serial API
-Serial API exposes simple interface that provides access to weather and date so that it can be accessed outside NodeMCU - for example by Arduino.
+Serial API exposes simple interface that provides access to weather and date/time so that it can be accessed outside NodeMCU - for example by Arduino.
 
 Serial API is divided into few Lua scripts. Loading of each script will automatically add new API commands:
 - *serial_api.lua* - has to be always loaded. It initializes serial interface with few diagnostics commands.
@@ -194,10 +201,9 @@ owe.syncPeriodSec = 1020 -- 17 min
 local gts_call = 0;
 
 -- return status for all modules.
-function scmd.GST()
+function scmd.SHI()
     gts_call = gts_call + 1;
-    uart.write(0, string.format("NOW:%u;CNT:%u;RAM:%u;%s;%s;%s", tmr.time(),
-        gts_call, node.heap(), tostring(wlan), tostring(ntpc), tostring(yaw)))
+    sapi.send("Hi There!")
 end
 
 -- setup wlan required by NTP clokc
@@ -215,55 +221,42 @@ owe.start()
 
 Here are few Serial API commands and their responses.
 ```bash
-# free ram
->GFR
-10664
 
 # function from script above
-GST
-NOW:30;CNT:1;RAM:12264;WiFi->172.20.10.6,ST:5,ERR:0;NTPC->18,NTP->
-07:08:03,129.70.132.35,DNS_RQ:12,NTP_RQ:12,NTP_RS:12;YAW->
-76.13.28.196,DNS_RQ:12,Y_RQ:13,Y_RS:13
+>SHI
+Hi There!
+
+# free ram
+>GFR
+RAM: 144.076
+
+# date
+>CFD
+2019-05-16 07:43:55
 
 # hour of the day
-CHH
-08
+>CHH
+07
 
 # minutes
-CMM
-11
+>CMM
+43
 
 # day of month
-CDD
+>CDD
 09
 
 # day
-CD3
-WED
+>CD3
+THU
 
-# weather description for today
-YF1 text
-Rain And Snow
-
-# weather description for tomorrow
->YF2 text
-Showers
-
-# not existing command
-YF1 min
-ERR:serialAPIYahooWeather.lua:6: attempt to concatenate field '?' (a nil value)
-
-# max temp for tomorrow 
-YF2 low
-1
-
-# weather date for today
-YF1 date
-09 Nov 2016
+# weather description for 3 days
+>WFF
+THU:9 16 overcast clouds,scattered clouds,few cloudsbroken clouds  FRI:11 20 overcast clouds,broken clouds,light rainclear sky  SAT:15 23 few clouds,clear sky
 ```
 
 # Firmware
-It's a good idea to compile firmware with minimal module set, it will save lots of RAM. Those modules are required: file, mqtt, gpio, net, node, tmr, uart, wifi. You can also use already precompiled firmware from 'firmware' folder.:
+It's a good idea to compile firmware with minimal module set, it will save lots of RAM. This is a minimal set that covers whole functionality required by all scripts: file, mqtt, gpio, net, node, tmr, uart, wifi. You can also use already precompiled firmware from *firmware* folder.:
 ```bash
 cd firmware
 esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x10000 NodeMCU.bin 0x8000 partitions_singleapp.bin

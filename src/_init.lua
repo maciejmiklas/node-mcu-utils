@@ -1,9 +1,9 @@
 require "date_format_europe";
-require "credentials"
 require "serial_api_clock"
 require "serial_api_open_weather"
 require "blink"
 require "scheduler"
+require "credentials"
 
 function scmd.GFR()
     collectgarbage()
