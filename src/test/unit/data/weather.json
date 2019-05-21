@@ -53,7 +53,7 @@
       },
       "weather": [
         {
-          "id": 600,
+          "id": 305,
           "main": "Snow",
           "description": "light snow",
           "icon": "13n"
@@ -89,9 +89,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 520,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky1",
           "icon": "01n"
         }
       ],
@@ -125,9 +125,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 503,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky2",
           "icon": "01n"
         }
       ],
@@ -159,9 +159,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 222,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky3",
           "icon": "01n"
         }
       ],
@@ -193,9 +193,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 320,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky4",
           "icon": "02d"
         }
       ],
@@ -226,9 +226,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 520,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky5",
           "icon": "01d"
         }
       ],
@@ -261,9 +261,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 801,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky6",
           "icon": "01d"
         }
       ],
@@ -296,9 +296,9 @@
       },
       "weather": [
         {
-          "id": 800,
+          "id": 222,
           "main": "Clear",
-          "description": "clear sky",
+          "description": "clear sky7",
           "icon": "01n"
         }
       ],

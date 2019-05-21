@@ -80,7 +80,7 @@ end
 local function generate_weather_text(ntpc_stat, owe_stat)
     local text = ""
     if ntpc_stat == nil and owe_stat == nil then
-        text = owe.forecast_text() .. "          "
+        text = owe.forecast_text() .. " >> RAM:" .. (node.heap() / 1000) .. "kb" .. "          "
     else
 
         local ft = owe.forecast_text()

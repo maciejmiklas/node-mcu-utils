@@ -13,18 +13,17 @@ owe_p = {
     utc_offset = 3600
 }
 
-local df = DateFormat.new()
+local dateFormat = DateFormat.new()
 
 -- forecast by day
 local tmp = {
     day_forecast = {},
-    day_forecast_idx = 1,
+    day_forecast_idx = 0,
     forecast = {}
 }
 
 local function reset()
-    tmp.day_forecast = {}
-    tmp.day_forecast_idx = 1
+    tmp.day_forecast_idx = 0
     tmp.forecast = {}
 end
 
@@ -49,7 +48,7 @@ local function update_current()
     owe_p.current.icons = codes_str
     local currentTemp = owe_p.forecast[1].temp
     if currentTemp < 0 then
-        owe_p.current.temp = round()
+        owe_p.current.temp = round(currentTemp)
     else
         owe_p.current.temp = round(currentTemp, 1)
     end
@@ -64,11 +63,15 @@ local function update_forecast_text()
             text = text .. " " .. string.char(3) .. string.char(4) .. " "
         end
         text = text .. weather.day .. ":" .. string.char(2) .. temp_min .. " " .. string.char(1) .. temp_max .. " "
-        for dIdx, desc in pairs(weather.description) do
-            text = text .. desc
-            if dIdx < weather.codes_size then
+
+        local first = true
+        for _, desc in pairs(weather.description) do
+            if first then
+                first = false
+            else
                 text = text .. ","
             end
+            text = text .. desc
         end
     end
     owe_p.forecast_text = text
@@ -142,47 +145,46 @@ local function contains(tab, val)
     return false
 end
 
-local function calculate_date_range(data)
-    local el = {}
-    el.temp_min = 1000
-    el.temp_max = -1000
-    el.description = {}
-    el.codes = {}
-    el.codes_size = 0
-    el.day = data.day
-
-    for idx, weather in pairs(data.el) do
-        if idx == 1 then
-            el.temp = weather.temp
-        end
-        el.temp_min = math.min(el.temp_min, weather.temp_min)
-        el.temp_max = math.max(el.temp_max, weather.temp_max)
-        if not contains(el.description, weather.description) then
-            table.insert(el.description, weather.description)
-            local code = map_code(weather.id)
-            if el.codes_size == 0 or (el.codes_size > 0 and el.codes[el.codes_size] ~= code) then
-                table.insert(el.codes, code)
-                el.codes_size = el.codes_size + 1
-            end
+local function update_day_forecast(df, weather)
+    df.temp_min = math.min(df.temp_min, weather.temp_min)
+    df.temp_max = math.max(df.temp_max, weather.temp_max)
+    if not contains(df.description, weather.description) then
+        table.insert(df.description, weather.description)
+        local code = map_code(weather.id)
+        if df.codes_size == 0 or (df.codes_size > 0 and df.codes[df.codes_size] ~= code) then
+            table.insert(df.codes, code)
+            df.codes_size = df.codes_size + 1
         end
     end
-    tmp.forecast[tmp.day_forecast_idx] = el
 end
 
-local function next_document(el)
-    if tmp.day_forecast.day == nil or tmp.day_forecast.day ~= el.day then
-        if tmp.day_forecast.day then
-            calculate_date_range(tmp.day_forecast)
-            if tmp.day_forecast_idx == owe_p.forecast_days then
-                on_data_end()
-                return false
-            end
-            tmp.day_forecast_idx = tmp.day_forecast_idx + 1
+local function init_df(df)
+    df.temp_min = 1000
+    df.temp_max = -1000
+    df.description = {}
+    df.codes = {}
+    df.codes_size = 0
+    return df;
+end
+
+local function next_weather_chunk(doc)
+
+    -- first day in weather chunk, or next day, like MON->TUE
+    if tmp.day_forecast_idx == 0 or tmp.forecast[tmp.day_forecast_idx].day ~= doc.day then
+        if tmp.day_forecast_idx == owe_p.forecast_days then
+            return false
         end
-        tmp.day_forecast.day = el.day
-        tmp.day_forecast.el = {}
+        tmp.day_forecast_idx = tmp.day_forecast_idx + 1
+        if tmp.forecast[tmp.day_forecast_idx] == nil then
+            tmp.forecast[tmp.day_forecast_idx] = {}
+        end
+        local df = tmp.forecast[tmp.day_forecast_idx]
+        init_df(df)
+        df.temp = doc.temp
+        df.day = doc.day
+        tmp.forecast[tmp.day_forecast_idx] = df
     end
-    table.insert(tmp.day_forecast.el, el)
+    update_day_forecast(tmp.forecast[tmp.day_forecast_idx], doc)
     return true
 end
 
@@ -204,16 +206,22 @@ function owe_p.on_next_document(doc)
         return true
     end
 
-    df:set_time(doc.dt, owe_p.utc_offset)
+    dateFormat:set_time(doc.dt, owe_p.utc_offset)
 
-    local val = {}
-    val.date = date
-    val.day = df:get_day_of_week_up()
-    val.temp_min = doc.main.temp_min
-    val.temp_max = doc.main.temp_max
-    val.temp = doc.main.temp
+    local df = {} -- Day Forecast
+    df.date = date
+    df.day = dateFormat:get_day_of_week_up()
+    df.temp_min = doc.main.temp_min
+    df.temp_max = doc.main.temp_max
+    df.temp = doc.main.temp
+
     local dw = doc.weather[1]
-    val.description = dw.description
-    val.id = dw.id
-    return next_document(val)
+    df.description = dw.description
+    df.id = dw.id
+
+    local next_doc = next_weather_chunk(df)
+    if not next_doc then
+        on_data_end()
+    end
+    return next_doc
 end

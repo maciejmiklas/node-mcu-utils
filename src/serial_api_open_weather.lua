@@ -26,7 +26,7 @@ function scmd.WST()
     end
 end
 
--- formatted weather text for 3 days intenden to be used with LEAClock
+-- formatted weather text for 3 days intended to be used with LEDClock
 function scmd.WFF()
     if not ready() then
         return

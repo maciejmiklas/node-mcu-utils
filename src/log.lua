@@ -1,9 +1,9 @@
 --TODO change log level over uart 0
 log = {
     is_debug = false,
-    is_info = false,
-    is_warn = false,
-    is_error = false,
+    is_info = true,
+    is_warn = true,
+    is_error = true,
     uart_id = 0
 }
 

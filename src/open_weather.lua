@@ -82,6 +82,7 @@ local function request_weather()
         headers = {
             Connection = "close"
         }
+        print("URL", owe.url..owe.appid)
         con = http.createConnection(owe.url..owe.appid, http.GET, { headers = headers, async = true })
         con:on("data", on_data)
         con:on("connect", on_connect)
