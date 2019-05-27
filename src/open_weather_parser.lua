@@ -203,6 +203,9 @@ function owe_p.on_next_document(doc)
     end
     local date = doc.dt_txt
     if not accept_time(date) then
+        if log.is_debug then
+            log.debug("OWE reject:", tostring(date))
+        end
         return true
     end
 
@@ -218,6 +221,10 @@ function owe_p.on_next_document(doc)
     local dw = doc.weather[1]
     df.description = dw.description
     df.id = dw.id
+
+    if log.is_debug then
+        log.debug("OWE next:", date, ",", df.day, ",", df.temp_min, ",", df.temp_max, ",", df.temp, ",", df.id, ",", df.description)
+    end
 
     local next_doc = next_weather_chunk(df)
     if not next_doc then

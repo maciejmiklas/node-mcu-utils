@@ -6,7 +6,7 @@ require "scheduler"
 -- Simple clock with precision of one second. It's bing synchronized with NTP server.
 ntpc = {
     current = 0, -- Curent UTC time in seconds since 1.1.1970.
-    sync_period_sec = 86400, -- period in seconds to sync with NTP server. 86400 = 24 hours
+    sync_period_sec = 3600, -- period in seconds to sync with NTP server. 3600 = an hour
     syncPeriodRetrySec = 120,
     last_sync_sec = -1, -- Seconds since last response from NTP server.
     sync_tolerance_sec = 120,
@@ -18,15 +18,15 @@ function ntpc.status()
     local status = nil
     if ntpc.last_sync_sec == -1 then
         status = "TIME ERROR"
-    elseif ntpc.last_sync_sec - ntpc.sync_tolerance_sec > ntpc.sync_period_sec then
+    elseif scheduler.uptime_sec() - ntpc.last_sync_sec > ntpc.sync_period_sec + ntpc.sync_tolerance_sec then
         status = "TIME OLD"
     end
     return status;
 end
 
-local function onNtpResponse(ts)
+local function on_ntp_response(ts)
     ntpc.current = ts
-    ntpc.last_sync_sec = 0
+    ntpc.last_sync_sec = scheduler.uptime_sec()
 end
 
 -- timer must run every second, because we use it to drive clock.
@@ -35,8 +35,9 @@ local function on_timer()
 end
 
 local function on_scheduler()
-    wlan.execute(function() ntp:request_time() end)
-    ntpc.last_sync_sec = scheduler.uptime_sec()
+    wlan.execute(function()
+        ntp:request_time()
+    end)
 end
 
 -- Starts periodical time syncronization with NTC server. It also executes first syncronization
@@ -52,7 +53,7 @@ function ntpc.start(ntpServer)
         ntp = NtpFactory:from_default_server()
     end
 
-    ntp:on_response(onNtpResponse)
+    ntp:register_response_callback(on_ntp_response)
 
     scheduler.register(on_scheduler, "NTP", ntpc.sync_period_sec, ntpc.syncPeriodRetrySec)
 

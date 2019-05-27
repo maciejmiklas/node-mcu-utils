@@ -10,7 +10,7 @@ function scmd.GFR()
     sapi.send("RAM: " .. tostring(node.heap() / 1000))
 end
 
-local gtc_buf = {
+local gtc = {
     last_weather_sync_sec = -1,
     ntpc_stat = nil,
     owe_stat = nil,
@@ -60,21 +60,21 @@ end
 -- return 1 if the text has been changed since last call, otherwise 0
 function scmd.GTC()
     local changed
-    if gtc_buf.update_count == 0 then
+    if gtc.update_count == 0 then
         changed = '1'
 
-    elseif gtc_buf.last_gtc_call == gtc_buf.update_count then
+    elseif gtc.last_gtc_call == gtc.update_count then
         changed = '0'
     else
         changed = '1'
-        gtc_buf.last_gtc_call = gtc_buf.update_count
+        gtc.last_gtc_call = gtc.update_count
     end
     sapi.send(changed)
 end
 
 -- scrolling text for arduino
 function scmd.GTX()
-    sapi.send(gtc_buf.text)
+    sapi.send(gtc.text)
 end
 
 local function generate_weather_text(ntpc_stat, owe_stat)
@@ -97,41 +97,53 @@ local function generate_weather_text(ntpc_stat, owe_stat)
             end
             text = text .. " " .. ntpc_stat
         end
+        collectgarbage()
         text = text .. " >> RAM:" .. (node.heap() / 1000) .. "kb"
         text = text .. "          "
     end
     return text
 end
 
-local function update_weather_text()
+local function update_weather()
     local ntpc_stat = ntpc.status()
     local owe_stat = owe.status()
     local last_weather_sync_sec = owe.last_sync_sec
 
-    if gtc_buf.last_weather_sync_sec == last_weather_sync_sec and gtc_buf.ntpc_stat == ntpc_stat and gtc_buf.owe_stat == owe_stat then
+    if gtc.last_weather_sync_sec == last_weather_sync_sec and gtc.ntpc_stat == ntpc_stat and gtc.owe_stat == owe_stat then
         return
     end
-    gtc_buf.last_weather_sync_sec = last_weather_sync_sec
-    gtc_buf.ntpc_stat = ntpc_stat
-    gtc_buf.owe_stat = owe_stat
-    gtc_buf.text = generate_weather_text(ntpc_stat, owe_stat)
-    gtc_buf.update_count = gtc_buf.update_count + 1
-
-    if log.is_debug then
-        log.debug("Updated weather text:", gtc_buf.text)
+    gtc.last_weather_sync_sec = last_weather_sync_sec
+    gtc.ntpc_stat = ntpc_stat
+    gtc.owe_stat = owe_stat
+    local new_text = generate_weather_text(ntpc_stat, owe_stat)
+    if (new_text == gtc.text) then
+        if log.is_info then
+            log.info("INT Weather did not change")
+        end
+    else
+        gtc.update_count = gtc.update_count + 1
+        gtc.text = new_text
+        if log.is_info then
+            log.info("INT new weather:", gtc.text)
+        end
     end
 end
 
 local function print_stuff()
+    print("############")
     scmd.GFR()
-    scmd.WFF()
+    scmd.GTX()
     scmd.CFD()
     scmd.WCW("temp")
+    print("############")
 end
 
-scheduler.register(update_weather_text, "update_wehater_text", 60, 10)
---scheduler.register(print_stuff, "print_stuff", 60, 60)
+--scheduler.register(print_stuff, "print_stuff", 5, 5)
+--owe.sync_period_sec = 60
+--sapi.uart_id = 0
 
+
+owe.register_response_callback(update_weather)
 wlan.setup(cred.ssid, cred.password)
 sapi.start()
 ntpc.start("pool.ntp.org")

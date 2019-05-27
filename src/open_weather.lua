@@ -34,9 +34,13 @@ function owe.has_weather()
     return owe_p.has_weather
 end
 
+function owe.register_response_callback(callback)
+    owe.response_callback = callback
+end
+
 function owe.status()
     local status = nil
-    if owe.last_sync_sec == -1 or owe_p.has_weather == false or owe_p.forecast_text == nil then
+    if owe.last_sync_sec == -1 or owe_p.has_weather == false or owe_p.has_weather == nil then
         status = "WEATHER ERROR"
     elseif scheduler.uptime_sec() - owe.last_sync_sec > owe.sync_period_sec + owe.sync_tolerance_sec then
         status = "WEATHER OLD"
@@ -59,6 +63,7 @@ local function on_data(status_code, data)
     if status then
         if not response then
             if log.is_debug then log.debug("OWE request parsed") end
+            owe.last_sync_sec = scheduler.uptime_sec()
             close()
             if owe.response_callback ~= nil then
                 owe.response_callback()
@@ -86,7 +91,6 @@ local function request_weather()
         con = http.createConnection(owe.url..owe.appid, http.GET, { headers = headers, async = true })
         con:on("data", on_data)
         con:on("connect", on_connect)
-        con:on("complete", function() owe.last_sync_sec = scheduler.uptime_sec() end)
     end
     con:close()
     con:request()

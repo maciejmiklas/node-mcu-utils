@@ -21,6 +21,7 @@ function NtpFactory:from_server(server)
 end
 
 function ntp:dns_response(_, ip)
+    if log.is_debug then log.debug("NTP DNS response") end
     if ip == nil then
         return
     end
@@ -36,15 +37,15 @@ function ntp:response(_, data)
     local ntpstamp = (highw * 65536 + loww) + (timezone * 3600) - 3600 -- seconds since 1.1.1900
     local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
 
+    if log.is_info then log.info("NTP time:", ustamp) end
     if self.response_callback ~= nill then
         self.response_callback(ustamp)
     end
-    if log.is_info then log.info("Got time") end
 end
 
 -- Registers function that will get called after NTP response has been received.
 -- Registered function should take one parameter - it's timestamp since 1970 in seconds.
-function ntp:on_response(response_callback)
+function ntp:register_response_callback(response_callback)
     self.response_callback = response_callback;
 end
 
