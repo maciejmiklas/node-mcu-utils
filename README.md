@@ -256,7 +256,7 @@ THU: min:9 max:16 overcast clouds,scattered clouds,few cloudsbroken clouds   FRI
 ```
 
 # Firmware
-It's a good idea to compile firmware with minimal module set, it will save lots of RAM. This is a minimal set that covers whole functionality required by all scripts: file, mqtt, gpio, net, node, tmr, uart, wifi. You can also use already precompiled firmware from *firmware* folder.:
+It's a good idea to compile firmware with minimal module set, it will save lots of RAM. This is a minimal set that covers whole functionality required by all scripts: file, mqtt, gpio, net, node, tmr, uart, wifi, sjson. You can also use already precompiled firmware from *firmware* folder.:
 ```bash
 cd firmware
 esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x10000 NodeMCU.bin 0x8000 partitions_singleapp.bin

@@ -1,4 +1,4 @@
-require "json"
+require "sjson"
 require "log"
 
 JsonListParser = {
@@ -58,7 +58,7 @@ function JsonListParser:on_next_chunk(data)
 
         if l_bracket_cnt > 0 and r_bracket_cnt > 0 and l_bracket_cnt == r_bracket_cnt then
             local docTxt = data:sub(l_bracket_idx, idx)
-            local jobj = json.decode(docTxt)
+            local jobj = sjson.decode(docTxt)
             self.keep_reading = self.element_ready_callback(jobj)
             if not self.keep_reading then
                 self:reset()
