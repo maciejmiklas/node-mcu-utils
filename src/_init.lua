@@ -151,9 +151,9 @@ local function print_stuff()
     print("############")
 end
 
-scheduler.register(print_stuff, "print_stuff", 5, 5)
-owe.sync_period_sec = 60
-sapi.uart_id = 0
+--scheduler.register(print_stuff, "print_stuff", 5, 5)
+--owe.sync_period_sec = 60
+--sapi.uart_id = 0
 
 
 owe.register_response_callback(update_weather)
