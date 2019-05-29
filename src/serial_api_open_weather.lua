@@ -34,20 +34,9 @@ function scmd.WFF()
     sapi.send(owe.forecast_text())
 end
 
--- forecast codes
+-- forecast icons
 function scmd.WFC()
-    if not ready() then
-        return
-    end
-    local today = owe.forecast(1)
-    local codes_str = ""
-    for i = 1, today.codes_size do
-        if i > 1 then
-            codes_str = codes_str .. ","
-        end
-        codes_str = codes_str .. today.codes[i]
-    end
-    sapi.send(codes_str)
+    scmd.WCW("icons")
 end
 
 -- current weather

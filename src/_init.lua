@@ -16,7 +16,8 @@ local gtc = {
     owe_stat = nil,
     text = "Initializing.....       ",
     update_count = 0,
-    last_gtc_call = -1
+    last_gtc_call = -1,
+    print_always_ram = true
 }
 
 -- set debug level
@@ -42,19 +43,21 @@ end
 function scmd.GSS()
     local ntpc_stat = ntpc.status()
     local owe_stat = owe.status()
-    local status = ""
+    local status = {}
     if ntpc_stat == nil and owe_stat == nil then
         status = "OK"
     else
         if ntpc_stat ~= nil then
-            status = ntpc_stat .. " "
+            table.insert(text, " ")
         end
         if owe_stat ~= nil then
-            status = status .. owe_stat
+            table.insert(text, owe_stat)
         end
-        status = status .. "; RAM:" .. (node.heap() / 1000) .. "kb"
+        table.insert(text, "; RAM:")
+        table.insert(text, node.heap() / 1000)
+        table.insert(text, "kb")
     end
-    sapi.send(status)
+    sapi.send(table.concat(status))
 end
 
 -- return 1 if the text has been changed since last call, otherwise 0
@@ -78,30 +81,40 @@ function scmd.GTX()
 end
 
 local function generate_weather_text(ntpc_stat, owe_stat)
-    local text = ""
+    local text = {}
     if ntpc_stat == nil and owe_stat == nil then
-        text = owe.forecast_text() .. " >> RAM:" .. (node.heap() / 1000) .. "kb" .. "          "
+        table.insert(text, owe.forecast_text())
+        table.insert(text, " >> RAM:")
+        table.insert(text, node.heap() / 1000)
+        table.insert(text, "kb")
+        table.insert(text, "          ")
     else
 
         local ft = owe.forecast_text()
         if ft ~= nil and ft:len() > 0 then
-            text = ft .. " >> "
+            table.insert(text, ft)
+            table.insert(text, " >> ")
         end
 
         if owe_stat ~= nil then
-            text = text .. owe_stat
+            table.insert(text, owe_stat)
         end
         if ntpc_stat ~= nil then
             if owe_stat ~= nil then
-                text = text .. ", "
+                table.insert(text, ", ")
             end
-            text = text .. " " .. ntpc_stat
+            table.insert(text, " ")
+            table.insert(text, ntpc_stat)
         end
-        collectgarbage()
-        text = text .. " >> RAM:" .. (node.heap() / 1000) .. "kb"
-        text = text .. "          "
+        if print_always_ram then
+            collectgarbage()
+            table.insert(text, " >> RAM:")
+            table.insert(text, node.heap() / 1000)
+            table.insert(text, "kb")
+        end
+        table.insert(text, "          ")
     end
-    return text
+    return table.concat(text)
 end
 
 local function update_weather()
@@ -138,9 +151,9 @@ local function print_stuff()
     print("############")
 end
 
---scheduler.register(print_stuff, "print_stuff", 5, 5)
---owe.sync_period_sec = 60
---sapi.uart_id = 0
+scheduler.register(print_stuff, "print_stuff", 5, 5)
+owe.sync_period_sec = 60
+sapi.uart_id = 0
 
 
 owe.register_response_callback(update_weather)

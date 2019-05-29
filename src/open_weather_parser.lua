@@ -6,7 +6,8 @@ owe_p = {
     -- forecast for next 3 days. Contains only weather for the day from 6:00 to 21:00.
     -- Forecast for the first day reflects weather for current day, and if it's a night for a next day.
     forecast = {},
-    -- forecast as text for 3 days
+
+    -- forecast text for 3 days
     forecast_text = nil,
     current = {},
     has_weather = false,
@@ -17,7 +18,6 @@ local dateFormat = DateFormat.new()
 
 -- forecast by day
 local tmp = {
-    day_forecast = {},
     day_forecast_idx = 0,
     forecast = {}
 }
@@ -38,14 +38,14 @@ end
 
 local function update_current()
     local today = owe_p.forecast[1]
-    local codes_str = ""
+    local codes_str = {}
     for i = 1, today.codes_size do
         if i > 1 then
-            codes_str = codes_str .. ","
+            table.insert(codes_str, ",")
         end
-        codes_str = codes_str .. today.codes[i]
+        table.insert(codes_str, today.codes[i])
     end
-    owe_p.current.icons = codes_str
+    owe_p.current.icons = table.concat(codes_str)
     local currentTemp = owe_p.forecast[1].temp
     if currentTemp < 0 then
         owe_p.current.temp = round(currentTemp)
@@ -55,26 +55,36 @@ local function update_current()
 end
 
 local function update_forecast_text()
-    local text = ""
+    local text = {}
     for idx, weather in pairs(owe_p.forecast) do
         local temp_min = round(weather.temp_min)
         local temp_max = round(weather.temp_max)
         if idx > 1 then
-            text = text .. " " .. string.char(3) .. string.char(4) .. " "
+            table.insert(text, " ")
+            table.insert(text, string.char(3))
+            table.insert(text, string.char(4))
+            table.insert(text, " ")
         end
-        text = text .. weather.day .. ":" .. string.char(2) .. temp_min .. " " .. string.char(1) .. temp_max .. " "
+        table.insert(text, weather.day)
+        table.insert(text, ":")
+        table.insert(text, string.char(2))
+        table.insert(text, temp_min)
+        table.insert(text, " ")
+        table.insert(text, string.char(1))
+        table.insert(text, temp_max)
+        table.insert(text, " ")
 
         local first = true
         for _, desc in pairs(weather.description) do
             if first then
                 first = false
             else
-                text = text .. ","
+                table.insert(text, ",")
             end
-            text = text .. desc
+            table.insert(text, desc)
         end
     end
-    owe_p.forecast_text = text
+    owe_p.forecast_text = table.concat(text)
 end
 
 local function on_data_end()

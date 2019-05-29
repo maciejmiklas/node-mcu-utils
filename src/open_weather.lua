@@ -9,7 +9,6 @@ owe = {
     url = "http://api.openweathermap.org/data/2.5/forecast?id=3081368&units=metric&appid=",
     sync_period_sec = 1200, -- sync weather every 20 minutes
     sync_on_error_pause_sec = 180,
-    weather = nil,
     last_sync_sec = -1, -- Seconds since last response from weather server.
     sync_tolerance_sec = 120,
     utc_offset = 3600,
@@ -87,12 +86,11 @@ local function request_weather()
         headers = {
             Connection = "close"
         }
-        print("URL", owe.url..owe.appid)
         con = http.createConnection(owe.url..owe.appid, http.GET, { headers = headers, async = true })
         con:on("data", on_data)
         con:on("connect", on_connect)
     end
-    con:close()
+    con:close() -- close previous connection
     con:request()
 end
 
