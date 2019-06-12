@@ -48,20 +48,32 @@ function owe.status()
 end
 
 local function close()
-    if con ~= nil then pcall(function() con:close() end) end
+    if con ~= nil then
+        pcall(function()
+            con:close()
+        end)
+    end
 end
 
 local function on_data(status_code, data)
     if status_code < 0 then
-        if log.is_error then log.error("OWE response: ", statusCode, " -> ", data) end
+        if log.is_error then
+            log.error("OWE response: ", statusCode, " -> ", data)
+        end
         close()
         return
     end
-    if log.is_debug then log.debug("OWE frame: ", (string.len(data) / 1000)) end
-    local status, response = pcall(function() return jlp:on_next_chunk(data) end)
+    if log.is_debug then
+        log.debug("OWE frame: ", (string.len(data) / 1000))
+    end
+    local status, response = pcall(function()
+        return jlp:on_next_chunk(data)
+    end)
     if status then
         if not response then
-            if log.is_debug then log.debug("OWE request parsed") end
+            if log.is_debug then
+                log.debug("OWE request parsed")
+            end
             owe.last_sync_sec = scheduler.uptime_sec()
             close()
             if owe.response_callback ~= nil then
@@ -69,13 +81,17 @@ local function on_data(status_code, data)
             end
         end
     else
-        if log.is_error then log.error("OWE callback: ", response, "->", data) end
+        if log.is_error then
+            log.error("OWE callback: ", response, "->", data)
+        end
         close()
     end
 end
 
 local function on_connect()
-    if log.is_debug then log.debug("OWE connected") end
+    if log.is_debug then
+        log.debug("OWE connected")
+    end
     jlp:reset()
     owe_p.on_data_start()
 end
@@ -83,14 +99,11 @@ end
 local function request_weather()
     if log.is_info then log.info("OWE Request weather") end
     if con == nil then
-        headers = {
-            Connection = "close"
-        }
-        con = http.createConnection(owe.url..owe.appid, http.GET, { headers = headers, async = true })
+        con = http.createConnection(owe.url .. owe.appid, http.GET, { async = true, timeout = 10000 })
         con:on("data", on_data)
         con:on("connect", on_connect)
     end
-    con:close() -- close previous connection
+    close() -- close previous connection
     con:request()
 end
 

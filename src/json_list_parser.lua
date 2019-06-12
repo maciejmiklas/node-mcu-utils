@@ -25,13 +25,13 @@ end
 
 function JsonListParser:on_next_chunk(data)
     if not self.keep_reading then return false end
-    local dataIdx = 1
+    local data_idx = 1
     if not self.list_found then
-        local listIdx = string.find(data, self.list_element_name)
-        if listIdx == -1 then
+        local list_idx = string.find(data, self.list_element_name)
+        if list_idx == nil or list_idx == -1 then
             return true
         else
-            dataIdx = listIdx
+            data_idx = list_idx
             self.list_found = true
         end
     elseif self.tmp then
@@ -44,7 +44,7 @@ function JsonListParser:on_next_chunk(data)
     local r_bracket_cnt = 0
     local data_len = string.len(data)
     local last_doc_end = -1
-    for idx = dataIdx, data_len, 1 do
+    for idx = data_idx, data_len, 1 do
         local chr = data:sub(idx, idx)
         if chr == "{" then
             if l_bracket_cnt == 0 then
@@ -72,7 +72,7 @@ function JsonListParser:on_next_chunk(data)
     end
 
     if l_bracket_cnt ~= r_bracket_cnt then
-        local data_start = dataIdx
+        local data_start = data_idx
         if last_doc_end ~= -1 then
             data_start = last_doc_end + 1
         end

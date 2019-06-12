@@ -17,7 +17,7 @@ local line_cnt = 0
 local file_ref = nil
 
 local function open_file()
-    file_ref = file.open(log_file.file_name, "w+")
+    file_ref = file.open(log_file.file_name, "a+")
 end
 
 local function ln_file(pref, arg)

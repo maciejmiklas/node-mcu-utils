@@ -38,6 +38,6 @@ end
 
 function scheduler.start()
     tmrObj = tmr.create()
-    tmrObj:register(2000, tmr.ALARM_AUTO, on_timer)
+    tmrObj:register(1000, tmr.ALARM_AUTO, on_timer)
     tmrObj:start()
 end

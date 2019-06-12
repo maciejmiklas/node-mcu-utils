@@ -5,12 +5,12 @@ end
 
 src = file.open("utils.log", "r")
 if src then
-    local line
+    local chunk
     repeat
-        line = src:read()
-        if line then
-            print(line)
+        chunk = src:read()
+        if chunk then
+            print(chunk)
         end
-    until line == nil
+    until chunk == nil
     src:close();
 end

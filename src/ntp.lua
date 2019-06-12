@@ -20,7 +20,7 @@ function NtpFactory:from_server(server)
     return obj
 end
 
-function ntp:dns_response(_, ip)
+function ntp:dns_response(ip)
     if log.is_debug then log.debug("NTP DNS response") end
     if ip == nil then
         return
@@ -29,8 +29,7 @@ function ntp:dns_response(_, ip)
     self.cn:send(123, ip, request)
 end
 
-function ntp:response(_, data)
-    self.cn = nil
+function ntp:response(data)
     local highw = data:byte(41) * 256 + data:byte(42)
     local loww = data:byte(43) * 256 + data:byte(44)
     local timezone = 1
@@ -38,6 +37,7 @@ function ntp:response(_, data)
     local ustamp = ntpstamp - 1104494400 - 1104494400 -- seconds since 1.1.1970
 
     if log.is_info then log.info("NTP time:", ustamp) end
+
     if self.response_callback ~= nill then
         self.response_callback(ustamp)
     end
@@ -50,7 +50,9 @@ function ntp:register_response_callback(response_callback)
 end
 
 function ntp:request_time()
-    self.cn = net.createConnection(net.UDP)
-    self.cn:on("receive", function(cn, data) self:response(cn, data) end)
-    self.cn:dns(self.server, function(cn, ip) self:dns_response(cn, ip) end)
+    if self.cn == nil then
+        self.cn = net.createConnection(net.UDP)
+        self.cn:on("receive", function(cn, data) self:response(data) end)
+    end
+    self.cn:dns(self.server, function(cn, ip) self:dns_response(ip) end)
 end

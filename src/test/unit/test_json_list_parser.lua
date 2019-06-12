@@ -1,7 +1,7 @@
 require "json_list_parser"
 
-local foundCnt = 1
-local expectedData_a = {
+local found_cnt = 1
+local expected_data_a = {
     { "2019-01-29 18:00:00", -2.05 },
     { "2019-01-29 21:00:00", -2.27 },
     { "2019-01-30 00:00:00", -3.64 },
@@ -56,32 +56,32 @@ end
 
 local function porcess_weather_part_a(doc)
     if not doc.dt_txt then return end
-    local ev = expectedData_a[foundCnt]
-    foundCnt = foundCnt + 1
+    local ev = expected_data_a[found_cnt]
+    found_cnt = found_cnt + 1
 
-    assert(doc.dt_txt == ev[1], "Error on " .. foundCnt .. " - " .. ev[1])
-    assert(doc.main.temp == ev[2], "Error on " .. foundCnt .. " - " .. ev[2])
+    assert(doc.dt_txt == ev[1], "Error on " .. found_cnt .. " - " .. ev[1])
+    assert(doc.main.temp == ev[2], "Error on " .. found_cnt .. " - " .. ev[2])
 end
 
 local function porcess_weather_part_b(doc)
     if not doc.dt_txt then return end
-    local ev = expectedData_a[foundCnt]
-    foundCnt = foundCnt + 1
+    local ev = expected_data_a[found_cnt]
+    found_cnt = found_cnt + 1
 end
 
 local function test_parse_whole_document_at_once()
-    foundCnt = 1
+    found_cnt = 1
     testCnt = testCnt + 1
     local data = read_file("test/unit/data/weather.json")
     local jp = JsonListParser.new()
     jp:register_element_ready(porcess_weather_part_a)
     jp:on_next_chunk(data)
 
-    assert(foundCnt == 41, "Found only: " .. foundCnt)
+    assert(found_cnt == 41, "Found only: " .. found_cnt)
 end
 
 local function test_parse_chunks_a()
-    foundCnt = 1
+    found_cnt = 1
     testCnt = testCnt + 1
     local jp = JsonListParser.new()
     jp:register_element_ready(porcess_weather_part_a)
@@ -93,11 +93,11 @@ local function test_parse_chunks_a()
     jp:on_next_chunk(read_file("test/unit/data/weather_a_006.json"))
     jp:on_next_chunk(read_file("test/unit/data/weather_a_007.json"))
 
-    assert(foundCnt == 41, "Found only: " .. foundCnt)
+    assert(found_cnt == 41, "Found only: " .. found_cnt)
 end
 
 local function test_parse_chunks_b()
-    foundCnt = 1
+    found_cnt = 1
     testCnt = testCnt + 1
     local jp = JsonListParser.new()
     jp:register_element_ready(porcess_weather_part_b)
@@ -111,7 +111,7 @@ local function test_parse_chunks_b()
     jp:on_next_chunk(read_file("test/unit/data/weather_b_008.json"))
     jp:on_next_chunk(read_file("test/unit/data/weather_b_009.json"))
 
-    assert(foundCnt == 37, "Found only: " .. foundCnt)
+    assert(found_cnt == 37, "Found only: " .. found_cnt)
 end
 
 test_parse_whole_document_at_once()

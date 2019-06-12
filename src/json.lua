@@ -22,7 +22,7 @@
 -- SOFTWARE.
 --
 
-json = { _version = "0.1.1" }
+sjson = { _version = "0.1.1" }
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -131,7 +131,7 @@ encode = function(val, stack)
 end
 
 
-function json.encode(val)
+function sjson.encode(val)
     return (encode(val))
 end
 
@@ -384,7 +384,7 @@ parse = function(str, idx)
 end
 
 
-function json.decode(str)
+function sjson.decode(str)
     if type(str) ~= "string" then
         if log.is_error then log.error("expected argument of type string, got ", type(str)) end
     end
