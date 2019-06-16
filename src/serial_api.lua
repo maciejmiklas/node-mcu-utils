@@ -16,6 +16,10 @@ function sapi.send_ok()
 end
 
 function sapi.send(data)
+    if data == null then
+        sapi.send_error()
+        return
+    end
     if log.is_debug then
         log.debug("SP->", data)
     end

@@ -4,6 +4,7 @@ require "serial_api_open_weather"
 require "blink"
 require "scheduler"
 require "credentials"
+require "ram_watchdog"
 
 function scmd.GFR()
     collectgarbage()
@@ -152,7 +153,7 @@ local function print_stuff()
 end
 
 --scheduler.register(print_stuff, "print_stuff", 5, 5)
---owe.sync_period_sec = 60
+--owe.sync_period_sec = 30
 --sapi.uart_id = 0
 
 
@@ -162,4 +163,5 @@ sapi.start()
 ntpc.start("pool.ntp.org")
 owe.start()
 blink.start()
+rwd.start()
 scheduler.start()
