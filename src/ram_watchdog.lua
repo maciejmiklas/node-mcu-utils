@@ -1,15 +1,13 @@
 rwd = {
-    frequency_sec = 10,
-    min_ram = 20480
+    frequency_sec = 300,
+    min_ram = 40960
 }
 
 local function on_scheduler()
     collectgarbage()
     local heap = node.heap()
     if heap < rwd.min_ram then
-        if log.is_warn then
-            log.warn("RWD restart, RAM: ", heap)
-        end
+        if log.is_warn then  log.warn("RWD restart, RAM: ", heap) end
         node.restart()
     end
 end

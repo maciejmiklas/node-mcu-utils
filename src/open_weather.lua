@@ -10,7 +10,7 @@ owe = {
     sync_period_sec = 1200, -- sync weather every 20 minutes
     sync_on_error_pause_sec = 180,
     last_sync_sec = -1, -- Seconds since last response from weather server.
-    sync_tolerance_sec = 120,
+    sync_tolerance_sec = 300,
     utc_offset = 3600,
     response_callback = nil
 }
@@ -41,7 +41,14 @@ function owe.status()
     local status = nil
     if owe.last_sync_sec == -1 or owe_p.has_weather == false or owe_p.has_weather == nil then
         status = "WEATHER ERROR"
-    elseif scheduler.uptime_sec() - owe.last_sync_sec > owe.sync_period_sec + owe.sync_tolerance_sec then
+        if log.is_warn then
+            log.warn("OWE err", owe.last_sync_sec, ",", owe_p.has_weather)
+        end
+
+    elseif scheduler.uptime_sec() - owe.last_sync_sec > owe.sync_tolerance_sec + owe.sync_period_sec then
+        if log.is_warn then
+            log.warn("OWE old", scheduler.uptime_sec(), ",", owe.last_sync_sec)
+        end
         status = "WEATHER OLD"
     end
     return status;
@@ -70,12 +77,13 @@ local function on_data(status_code, data)
         return jlp:on_next_chunk(data)
     end)
     if status then
-        if not response then
+        if not response then -- false when weather stream has been parsed
             if log.is_debug then
                 log.debug("OWE request parsed")
             end
-            owe.last_sync_sec = scheduler.uptime_sec()
             close()
+            -- update sync time before calling callback because it might read it
+            owe.last_sync_sec = scheduler.uptime_sec()
             if owe.response_callback ~= nil then
                 owe.response_callback()
             end
@@ -97,7 +105,9 @@ local function on_connect()
 end
 
 local function request_weather()
-    if log.is_info then log.info("OWE Request weather") end
+    if log.is_info then
+        log.info("OWE Request weather")
+    end
     if con == nil then
         con = http.createConnection(owe.url .. owe.appid, http.GET, { async = true, timeout = 10000 })
         con:on("data", on_data)

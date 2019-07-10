@@ -22,13 +22,13 @@ local tmp = {
     forecast = {}
 }
 
-local function reset()
+local function free_temp()
     tmp.day_forecast_idx = 0
     tmp.forecast = {}
 end
 
 function owe_p.on_data_start()
-    reset()
+    free_temp()
 end
 
 function round(num, numDecimalPlaces)
@@ -95,7 +95,7 @@ local function on_data_end()
     update_current()
     update_forecast_text()
     owe_p.has_weather = true
-    reset()
+    free_temp()
 end
 
 --https://openweathermap.org/weather-conditions
@@ -155,11 +155,22 @@ local function contains(tab, val)
     return false
 end
 
+local function describe(description)
+    if string.find(description, "clouds") then
+        description = "clouds"
+
+    elseif string.find(description, "rain") then
+        description = "rain"
+    end
+    return description
+end
+
 local function update_day_forecast(df, weather)
     df.temp_min = math.min(df.temp_min, weather.temp_min)
     df.temp_max = math.max(df.temp_max, weather.temp_max)
-    if not contains(df.description, weather.description) then
-        table.insert(df.description, weather.description)
+    local description = describe(weather.description)
+    if not contains(df.description, description) then
+        table.insert(df.description, description)
         local code = map_code(weather.id)
         if df.codes_size == 0 or (df.codes_size > 0 and df.codes[df.codes_size] ~= code) then
             table.insert(df.codes, code)

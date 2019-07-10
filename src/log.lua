@@ -1,4 +1,3 @@
---TODO change log level over uart 0
 log = {
     is_debug = false,
     is_info = true,
@@ -81,7 +80,7 @@ function log.warn(...)
     end
 end
 
-function log.setup(debug, info, warn, error)
+function log.change_level(debug, info, warn, error)
     ln("LOG->", { "D:", debug, " I:", info, " W:", warn, " E:", error })
     log.is_debug = debug
     log.is_info = info

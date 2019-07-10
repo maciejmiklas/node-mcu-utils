@@ -1,30 +1,39 @@
 require "log"
 
-wlan = { ssid = "SSID not set" }
+wlan = {
+    ssid = "SSID not set",
+    max_queue_size = 4
+}
 
 local online = false
-local callbacks = {}
-local offReason = nil
+local callback_queue = {}
+local off_reason = nil
 
 local function on_online(ev, info)
     online = true
-    offReason = nil
-    if log.is_info then log.info("Wlan ON:", info.ip, "/", info.netmask, ",gw:", info.gw) end
+    off_reason = nil
+    if log.is_info then
+        log.info("WLAN ON:", info.ip, "/", info.netmask, ",gw:", info.gw)
+    end
 
     -- execute callback waitnitg in queue
-    local clb = table.remove(callbacks)
+    local clb = table.remove(callback_queue)
     while clb ~= nil do
         local _, err = pcall(clb)
-        if err ~= nil then if log.is_error then log.error(err) end end
-        clb = table.remove(callbacks)
+        if err ~= nil then
+            if log.is_error then
+                log.error(err)
+            end
+        end
+        clb = table.remove(callback_queue)
     end
 end
 
 local function on_offline(ev, info)
     online = false
-    if info.reason ~= offReason then
+    if info.reason ~= off_reason then
         log.warn("Wlan OFF:", info.reason)
-        offReason = info.reason
+        off_reason = info.reason
     end
 end
 
@@ -44,9 +53,16 @@ end
 function wlan.execute(callback)
     if online then
         local _, err = pcall(callback)
-        if err ~= nil then if log.is_error then log.error(err) end end
+        if err ~= nil then
+            if log.is_error then
+                log.error(err)
+            end
+        end
         return
     end
-
-    table.insert(callbacks, callback)
+    if table.getn(callback_queue) < wlan.max_queue_size then
+        table.insert(callback_queue, callback)
+    else
+        if log.is_warn then log.warn("WLAN queue full") end
+    end
 end

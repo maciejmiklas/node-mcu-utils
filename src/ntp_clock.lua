@@ -9,7 +9,7 @@ ntpc = {
     sync_period_sec = 3600, -- period in seconds to sync with NTP server. 3600 = an hour
     syncPeriodRetrySec = 120,
     last_sync_sec = -1, -- Seconds since last response from NTP server.
-    sync_tolerance_sec = 120,
+    sync_tolerance_sec = 300,
 }
 
 local ntp, timer

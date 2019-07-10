@@ -18,25 +18,25 @@ local gtc = {
     text = "Initializing.....       ",
     update_count = 0,
     last_gtc_call = -1,
-    print_always_ram = true
+    print_debug = true
 }
 
 -- set debug level
 function scmd.GDL(level)
     if level == '0' then
-        log.setup(false, false, false, false)
+        log.change_level(false, false, false, false)
 
     elseif level == '1' then
-        log.setup(false, false, false, true)
+        log.change_level(false, false, false, true)
 
     elseif level == '2' then
-        log.setup(false, false, true, true)
+        log.change_level(false, false, true, true)
 
     elseif level == '3' then
-        log.setup(false, true, true, true)
+        log.change_level(false, true, true, true)
 
     elseif level == '4' then
-        log.setup(true, true, true, true)
+        log.change_level(true, true, true, true)
     end
 end
 
@@ -46,17 +46,18 @@ function scmd.GSS()
     local owe_stat = owe.status()
     local status = {}
     if ntpc_stat == nil and owe_stat == nil then
-        status = "OK"
+        table.insert(status, "OK")
     else
         if ntpc_stat ~= nil then
-            table.insert(text, " ")
+            table.insert(status, " ")
         end
         if owe_stat ~= nil then
-            table.insert(text, owe_stat)
+            table.insert(status, owe_stat)
         end
-        table.insert(text, "; RAM:")
-        table.insert(text, node.heap() / 1000)
-        table.insert(text, "kb")
+        collectgarbage()
+        table.insert(status, "; RAM:")
+        table.insert(status, node.heap() / 1000)
+        table.insert(status, "kb")
     end
     sapi.send(table.concat(status))
 end
@@ -81,40 +82,33 @@ function scmd.GTX()
     sapi.send(gtc.text)
 end
 
-local function generate_weather_text(ntpc_stat, owe_stat)
+local function generate_weather_text()
     local text = {}
-    if ntpc_stat == nil and owe_stat == nil then
-        table.insert(text, owe.forecast_text())
-        table.insert(text, " >> RAM:")
+
+    local ft = owe.forecast_text()
+    if ft ~= nil and ft:len() > 0 then
+        table.insert(text, ft)
+    end
+
+    local owe_stat = owe.status()
+    if owe_stat ~= nil then
+        table.insert(text, " >> ")
+        table.insert(text, owe_stat)
+    end
+
+    local ntpc_stat = ntpc.status()
+    if ntpc_stat ~= nil then
+        table.insert(text, " >> ")
+        table.insert(text, ntpc_stat)
+    end
+
+    if gtc.print_debug then
+        collectgarbage()
+        table.insert(text, ">> RAM:")
         table.insert(text, node.heap() / 1000)
         table.insert(text, "kb")
-        table.insert(text, "          ")
-    else
-
-        local ft = owe.forecast_text()
-        if ft ~= nil and ft:len() > 0 then
-            table.insert(text, ft)
-            table.insert(text, " >> ")
-        end
-
-        if owe_stat ~= nil then
-            table.insert(text, owe_stat)
-        end
-        if ntpc_stat ~= nil then
-            if owe_stat ~= nil then
-                table.insert(text, ", ")
-            end
-            table.insert(text, " ")
-            table.insert(text, ntpc_stat)
-        end
-        if print_always_ram then
-            collectgarbage()
-            table.insert(text, " >> RAM:")
-            table.insert(text, node.heap() / 1000)
-            table.insert(text, "kb")
-        end
-        table.insert(text, "          ")
     end
+    table.insert(text, "          ")
     return table.concat(text)
 end
 
@@ -129,7 +123,7 @@ local function update_weather()
     gtc.last_weather_sync_sec = last_weather_sync_sec
     gtc.ntpc_stat = ntpc_stat
     gtc.owe_stat = owe_stat
-    local new_text = generate_weather_text(ntpc_stat, owe_stat)
+    local new_text = generate_weather_text()
     if (new_text == gtc.text) then
         if log.is_info then
             log.info("INT Weather did not change")
@@ -143,20 +137,27 @@ local function update_weather()
     end
 end
 
-local function print_stuff()
-    print("############")
-    scmd.GFR()
-    scmd.GTX()
-    scmd.CFD()
-    scmd.WCW("temp")
-    print("############")
+
+local function do_stuff()
+    scmd.CHM()
+    --scmd.CDM()
+    --scmd.CD3()
+    --scmd.WCW("temp")
+    --scmd.GTX()
 end
 
---scheduler.register(print_stuff, "print_stuff", 5, 5)
---owe.sync_period_sec = 30
---sapi.uart_id = 0
+local function print_stuff()
+    collectgarbage()
+    log.info("RAM: ", tostring(node.heap() / 1000))
+end
 
+scheduler.register(print_stuff, "print_stuff", 5, 5)
+scheduler.register(do_stuff, "do_stuff", 1, 1)
 
+owe.sync_period_sec = 30
+--ntpc.sync_period_sec = 10
+
+if log.is_info then log.info("Initializing....") end
 owe.register_response_callback(update_weather)
 wlan.setup(cred.ssid, cred.password)
 sapi.start()
