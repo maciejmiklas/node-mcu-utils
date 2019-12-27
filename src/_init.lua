@@ -137,26 +137,6 @@ local function update_weather()
     end
 end
 
-
-local function do_stuff()
-    scmd.CHM()
-    --scmd.CDM()
-    --scmd.CD3()
-    --scmd.WCW("temp")
-    --scmd.GTX()
-end
-
-local function print_stuff()
-    collectgarbage()
-    log.info("RAM: ", tostring(node.heap() / 1000))
-end
-
-scheduler.register(print_stuff, "print_stuff", 5, 5)
-scheduler.register(do_stuff, "do_stuff", 1, 1)
-
-owe.sync_period_sec = 30
---ntpc.sync_period_sec = 10
-
 if log.is_info then log.info("Initializing....") end
 owe.register_response_callback(update_weather)
 wlan.setup(cred.ssid, cred.password)
