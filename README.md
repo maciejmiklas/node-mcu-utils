@@ -1,12 +1,12 @@
 This project contains a few utilities for NodeMcu based on ESP32. 
 
-[Here you will find branch for ESP8266](https://github.com/maciejmiklas/NodeMCUUtils/tree/esp8266)
+[Here you will find the branch for ESP8266](https://github.com/maciejmiklas/NodeMCUUtils/tree/esp8266)
 
 # Logger
 Different log levels can be specified in *log.lua*, including the UART Port.
 
 # Serial Port
-Serial port fol logger can be changed in *log.lua -> log.uart_id*. Port for communication is in *serial_api.lua -> sapi.uart_id*
+Serial port fol logger can be changed in *log.lua -> log.uart_id*. The port for communication is in *serial_api.lua -> sapi.uart_id*
 
 # Date Format
 Provides functionality to get local date and time from timestamp given in seconds since 1970.01.01
@@ -30,9 +30,9 @@ Day of week:  6
 ```
 
 # WiFi Access
-It's simple facade for connecting to WiFi. You have to provide connection credentials and function that will be executed after the connection has been established.
+It's a simple facade for connecting to WiFi. You have to provide connection credentials and a function that will be executed after the connection has been established.
 
-*execute(...)* connects to WiFi and this can take some time. You can still call this method multiple times. In such case callbacks will be stored in the queue and executed after WiFi connection has been established.
+*execute(...)* connects to WiFi, which can take some time. You can still call this method multiple times. In such cases, callbacks will be stored in the queue and executed after the WiFi connection has been established.
 
 ``` lua
 require "wlan"
@@ -48,17 +48,17 @@ wlan.execute(print_abc)
 ```
 
 ``` bash
-Wlan Status on init:    WiFi->nil,ST:1,ERR:0
-Wlan Status on connect:   WiFi->172.20.10.6,ST:5,ERR:0
+Wlan Status on init: WiFi ->nil,ST:1,ERR:0
+Wlan Status on connect: WiFi ->172.20.10.6,ST:5,ERR:0
 ABC
 ```
 
 # NTP Time
-This simple facade connects to given NTP server, request UTC time from it and once response has been received it calls given callback function. 
+This simple facade connects to a given NTP server, requests UTC time from it, and once a response has been received, it calls the given callback function. 
 
-Example below executes following chain: WiFi -> NTP -> Date Format. 
-So in the fist step we are creating WLAN connection and registering callback function that will be executed after connection has been established. This callback function requests time from NTP server (*ntp.requestTime*). 
-On the *ntp* object we are registering another function that will get called after NTP response has been received: *printTime(ts)*.
+The example below executes the following chain: WiFi -> NTP -> Date Format. 
+So in the first step, we create a WLAN connection and register a callback function that will be executed after a connection has been established. This callback function requests time from the NTP server (*ntp.requestTime*). 
+On the *ntp* object, we are registering another function that will get called after the NTP response has been received: *printTime(ts)*.
 
 ``` lua
 require "wlan"
@@ -93,9 +93,9 @@ Day of Week:    3
 ```
 
 # Ntp Clock
-This script provides functionality to run a clock with precision of one second and to synchronize this clock every few hours with NTP server. 
+This script provides functionality to run a clock with a precision of one second and to synchronize this clock every few hours with the NTP server. 
 
-In the code below we first configure WiFi access. Once the WiFi access has been established it will call *ntpc.start()*. This function will start clock that will get synchronized with given NTP server every minute. Now you can access actual UTC time in seconds over *ntpc.current*. In order to show that it's working we have registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
+In the code below, we first configure WiFi access. Once the WiFi access has been established, it will call *ntpc.start()*. This function will start a clock synchronizing with the given NTP server every minute. Now you can access actual UTC time in seconds over *ntpc.current*. To show that it's working, we have a registered timer that will call *printTime()* every second. This function reads current time as *ntpc.current* and prints it as local time. 
 
 ```lua
 collectgarbage() print("RAM init", node.heap())
@@ -143,10 +143,10 @@ Day of Week:    4
 ```
 
 # Open Weather
-This script provides access to [Open Weather](https://openweathermap.org), you have to register to get your application id. 
+This script provides access to [Open Weather](https://openweathermap.org). You have to register to get your application id. 
 *owe.start()* will obtain weather immediately and keep refreshing it every *owe.sync_period_sec* second.
 
-Open Weather delivers lots of info in forecast. *open_weather_parser.lua* reduces it to 3 next days, without nights. 
+Open Weather delivers lots of info in the forecast. *open_weather_parser.lua* reduces it to 3 next days, without nights. 
 
 ```lua
 require "open_weather.lua"
@@ -178,16 +178,16 @@ Weather for tomorrow: MON 16 25  Partly Cloudy
 ```
 
 # Serial API
-Serial API exposes simple interface that provides access to weather and date/time so that it can be accessed outside NodeMCU - for example by Arduino.
+Serial API exposes a simple interface that provides access to weather and date/time so that it can be accessed outside NodeMCU - for example, by Arduino.
 
-Serial API is divided into few Lua scripts. Loading of each script will automatically add new API commands:
-- *serial_api.lua* - has to be always loaded. It initializes serial interface with few diagnostics commands.
+Serial API is divided into a few Lua scripts. Loading of each script will automatically add new API commands:
+- *serial_api.lua* - has to be always loaded. It initializes the serial interface with few diagnostics commands.
 - *serial_api_clock.lua* - access to clock including date formatter.
 - *serial_api_open_weather.lua* - API for Open Weather
 
-Each script above registers set of commands as keys of *scmd* table - inside of each script you will find further documentation.
+Each script above registers a set of commands as keys of *scmd* table - inside each script, you will find further documentation.
 
-Example below loads all available scripts:
+The example below loads all available scripts:
 
 ```lua
 require "serial_api_clock"
@@ -256,7 +256,7 @@ THU: min:9 max:16 overcast clouds,scattered clouds,few cloudsbroken clouds   FRI
 ```
 
 # Firmware
-It's a good idea to compile firmware with minimal module set, it will save lots of RAM. This is a minimal set that covers whole functionality required by all scripts: file, mqtt, gpio, net, node, tmr, uart, wifi, sjson, http. You can also use already precompiled firmware from *firmware* folder.:
+It's a good idea to compile firmware with a minimal module set, it will save lots of RAM. It is a minimal set that covers the whole functionality required by all scripts: file, mqtt, gpio, net, node, tmr, uart, WiFi, sjson, http. You can also use already precompiled firmware from *firmware* folder.:
 ```bash
 cd firmware
 esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 115200 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 bootloader.bin 0x10000 NodeMCU.bin 0x8000 partitions_singleapp.bin
